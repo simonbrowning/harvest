@@ -1,9 +1,17 @@
 (function() {
         'use strict';
-        var request = require("request");
-        var config = require("config");
-        var _ = require("underscore");
-        var moment = require("moment");
+        var request = require("request"),
+        throttledRequest = require("throttled-request")(request),
+        config = require("config"),
+        _ = require("underscore"),
+        moment = require("moment");
+
+        throttledRequest.configure({
+          requests: 100,
+          milliseconds: 150000
+        });
+
+
 
         var last_month = moment().subtract(1, "month").format("YYYY-MM");
         var exclude_fields = ['active_task_assignments_count', 'active_user_assignments_count', 'cache_version',
@@ -22,7 +30,7 @@
         };
 
         //Get list of all active projects in Harvest
-        request.get(options, function(error, response, body) {
+        throttledRequest(options, function(error, response, body) {
             //Check for errors
             if (!error && response.statusCode == 200) {
                 //Convert response body to JSON from a string
@@ -48,6 +56,7 @@
                             new_project.name = project.name.match(/(.+)\d{4}\-\d{2}$/)[1] + moment().format("YYYY-MM");
                             console.log("New Project Name: " + new_project.name);
                             var options = {
+                                'method': "POST",
                                 'headers': headers,
                                 'url': config.harvest.project_url,
                                 'body': JSON.stringify({
@@ -56,7 +65,7 @@
                             };
 
                             //Create new project
-                            request.post(options, function(error, response, body) {
+                            throttledRequest(options, function(error, response, body) {
                                 if (!error && response && response.statusCode == 201) {
                                     console.log(">>>New Project Created");
                                     console.log(response.headers.location);
@@ -68,7 +77,7 @@
                                         'url': config.harvest.project_url + "/" + pid + "/user_assignments"
                                     };
                                     //Get attached users to old project
-                                    request.get(options, function(error, response, body) {
+                                    throttledRequest(options, function(error, response, body) {
                                         if (!error && response.statusCode == 200) {
                                             var users = JSON.parse(body);
                                             console.log(">>>Start user copying");
@@ -83,13 +92,14 @@
                                                 };
 
                                                 var options = {
+                                                    'method': "POST",
                                                     'headers': headers,
                                                     'url': ""+config.harvest.project_url + "/" + new_pid + "/user_assignments",
                                                     'body': JSON.stringify(new_user)
                                                 };
 
                                                 //Send request to add user to new project
-                                                request.post(options, function(error, response, body) {
+                                                throttledRequest(options, function(error, response, body) {
                                                     if (error || (response && response.statusCode !== 201)) {
                                                         console.log("Could not add user: ", error);
                                                     } else {
@@ -109,7 +119,7 @@
                                       'url': config.harvest.project_url+"/"+pid+"/task_assignments"
                                     };
                                     //Get attached users to old project
-                                    request.get(options,function(error, response, body){
+                                    throttledRequest(options,function(error, response, body){
                                       if (!error && response.statusCode == 200) {
                                       var tasks = JSON.parse(body);
                                       //loop through and add them to new project
@@ -123,12 +133,13 @@
                                           };
 
                                           var options = {
+                                            'method': "POST",
                                             'headers': headers,
                                             'url': config.harvest.project_url+"/"+new_pid+"/task_assignments",
                                             'body': JSON.stringify(new_task)
                                           };
                                           //Send request to add user to new project
-                                          request.post(options,function(error,response,body){
+                                          throttledRequest(options,function(error,response,body){
                                               if(error || (response && response.statusCode !== 201)){
                                                 console.log("Could not add task: ",error);
                                               }else{
@@ -151,11 +162,12 @@
 
                     //Toggle
                     options = {
+                        'method': "PUT",
                         'headers': headers,
                         'url': config.harvest.project_url + "/" + pid + "/toggle"
                     };
 
-                    request.put(options, function(error, response, body) {
+                    throttledRequest(options, function(error, response, body) {
                         console.log("Disabling project: " + pid);
                         if (error || (response && response.statusCode !== 200)) {
                             console.log("Couldn't disable project: " + pid);
