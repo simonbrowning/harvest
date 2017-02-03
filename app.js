@@ -8,7 +8,7 @@
 
         throttledRequest.configure({
           requests: 100,
-          milliseconds: 150000
+          milliseconds: 15000
         });
 
 
