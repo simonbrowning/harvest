@@ -1,182 +1,263 @@
 (function() {
     'use strict';
-    var request = require("request"),
-        throttledRequest = require("throttled-request")(request),
+    var r = require("request"),
+        throttledRequest = require("throttled-request")(r),
         config = require("config"),
         _ = require("underscore"),
         moment = require("moment");
 
+    //Setting Throttle Config for Harvest rate limiter
     throttledRequest.configure({
         requests: 70,
         milliseconds: 20000
     });
 
-    var last_month = moment().subtract(1, "month").format("YYYY-MM");
-    var exclude_fields = ['active_task_assignments_count', 'active_user_assignments_count', 'cache_version',
+    var _last_month = moment().subtract(1, "month").format("YYYY-MM");
+    var _exclude_fields = ['active_task_assignments_count', 'active_user_assignments_count', 'cache_version',
         'created_at', 'earliest_record_at', 'hint-earliest-record-at', 'hint-latest-record-at', 'id',
         'latest_record_at', 'name', 'updated_at'
     ];
-    var headers = {
-        'User-Agent': "node-harvest",
-        'Content-Type': "application/json",
-        'Accept': "application/json",
-        'Authorization': config.harvest.auth
-    };
-    var options = {
-        'headers': headers,
-        'url': config.harvest.project_url
-    };
 
-    //Get list of all active projects in Harvest
-    throttledRequest(options, function(error, response, body) {
-        //Check for errors
-        if (!error && response.statusCode == 200) {
-            //Convert response body to JSON from a string
-            var json_body = JSON.parse(body),
-                project, pid, new_project = {};
-            //Loop through all projects
-            _.each(json_body, function(contents) {
-                project = contents.project;
-                //Check if project has a date YYYY-MM at the end of the project and is active
-                if ((_.has(project, "name") && project.name.endsWith(last_month)) && !!project.active) {
-                    pid = project.id;
-                    console.log("Project to update: " + pid);
+    function sendRequest(method, options) {
+        return new Promise(function(resolve, reject) {
+            if (!(_.has(options, "path")) || !method) {
+                reject("No path / method was set");
+            }
+            //Options for reqest
+            var _options = {
+                method: method,
+                uri: config.harvest.project_url,
+                headers: {
+                    'User-Agent': "node-harvest",
+                    'Content-Type': "application/json",
+                    'Accept': "application/json",
+                    'Authorization': config.harvest.auth
+                },
+                json: true // Automatically parses the JSON string in the response
+            };
 
-                    //Clone project
-                    _.each(project, function(value, key, list) {
-                        if (_.has(list, key) && !exclude_fields.includes(key)) {
-                            new_project[key] = value;
-                        }
-                    });
-                    //console.log("new_project",new_project);
-
-                    //Give new name to project
-                    new_project.name = project.name.match(/(.+)\d{4}\-\d{2}$/)[1] + moment().format("YYYY-MM");
-                    var options = {
-                        'method': "POST",
-                        'headers': headers,
-                        'url': config.harvest.project_url,
-                        'body': JSON.stringify({
-                            'project': new_project
-                        })
-                    };
-
-                    //Create new project
-                    throttledRequest(options, function(error, response, body) {
-                        if (!error && response && response.statusCode == 201) {
-                            console.log(">>>New Project Created");
-                            console.log(response.headers.location);
-                            var new_pid = response.headers.location.match(/\d+/)[0];
-                            console.log("Old project:" + pid + ". New project: " + new_pid);
-                            //user assignment
-                            var options = {
-                                'headers': headers,
-                                'url': config.harvest.project_url + "/" + pid + "/user_assignments"
-                            };
-                            //Get attached users to old project
-                            throttledRequest(options, function(error, response, body) {
-                                if (!error && response.statusCode == 200) {
-                                    var users = JSON.parse(body);
-                                    console.log(">>>Start user copying");
-                                    //loop through and add them to new project
-                                    for (var i = 0; users.length > i; i++) {
-                                        var user = users[i];
-                                        console.log("user_id", user.user_assignment.user_id);
-                                        var new_user = {
-                                            'user': {
-                                                'id': user.user_assignment.user_id,
-                                            }
-                                        };
-
-                                        var options = {
-                                            'method': "POST",
-                                            'headers': headers,
-                                            'url': "" + config.harvest.project_url + "/" + new_pid + "/user_assignments",
-                                            'body': JSON.stringify(new_user)
-                                        };
-
-                                        //Send request to add user to new project
-                                        throttledRequest(options, function(error, response, body) {
-                                            if (error || (response && response.statusCode !== 201)) {
-                                                console.log("Could not add user: ", error);
-                                            } else {
-                                                console.log("User Added to new project " + new_pid);
-                                            }
-                                        });
-                                    } //For Loop
-                                } else {
-                                    console.error(response.statusCode);
-                                    console.error(body);
-                                }
-                            });
-
-                            //task assignment
-                            var options = {
-                                'headers': headers,
-                                'url': config.harvest.project_url + "/" + pid + "/task_assignments"
-                            };
-                            //Get attached tasks to old project
-                            throttledRequest(options, function(error, response, body) {
-                                if (!error && response.statusCode == 200) {
-                                    var tasks = JSON.parse(body);
-                                    //loop through and add them to new project
-                                    console.log(">>>Start migrating tasks");
-                                    for (var i = 0; tasks.length > i; i++) {
-                                        var task = tasks[i];
-                                        var new_task = {
-                                            'task': {
-                                                'id': task.task_assignment.task_id,
-                                            }
-                                        };
-
-                                        var options = {
-                                            'method': "POST",
-                                            'headers': headers,
-                                            'url': config.harvest.project_url + "/" + new_pid + "/task_assignments",
-                                            'body': JSON.stringify(new_task)
-                                        };
-                                        //Send request to add user to new project
-                                        throttledRequest(options, function(error, response, body) {
-                                            if (error || (response && response.statusCode !== 201)) {
-                                                console.log("Could not add task: ", error);
-                                            } else {
-                                                console.log("Task Added to new task " + new_pid);
-                                            }
-                                        });
-                                    } //For Loop
-
-                                } else {
-                                    console.log("Task failed");
-                                    console.error(response.statusCode);
-                                    console.error(body);
-                                }
-                            });
-
-                        } else {
-                            console.log("failed to create new project");
-                            console.error(response.statusCode);
-                            console.error(body);
-                        }
-                    });
-                    //Toggle
-                    options = {
-                        'method': "PUT",
-                        'headers': headers,
-                        'url': config.harvest.project_url + "/" + pid + "/toggle"
-                    };
-
-                    throttledRequest(options, function(error, response, body) {
-                        console.log("Disabling project: " + pid);
-                        if (error || (response && response.statusCode !== 200)) {
-                            console.log("Couldn't disable project: " + pid);
-                        } else {
-                            console.log("Project disabled: " + pid);
-                        }
-                    });
+            //Loop through and merge options
+            for (var key in options) {
+                if (options.hasOwnProperty(key)) {
+                    if (key === "path") {
+                        _options.uri += options[key];
+                    } else {
+                        _options[key] = options[key];
+                    }
+                }
+            }
+            console.log("API call: " + _options.uri);
+            //Make request
+            throttledRequest(_options, function(err, resp, body) {
+                if (err || !/^2\d{2}$/.test(resp.statusCode)) {
+                    console.log(body);
+                    reject(body);
+                } else {
+                    console.log("success");
+                    if (resp.statusCode == 200) {
+                        resolve(body);
+                    } else if (resp.statusCode == 201) {
+                        resolve(resp);
+                    }
                 }
             });
-        } else {
-            console.log("failed to get list of projects");
-        }
-    });
+        });
+    }
+
+    function createNewProject(project, new_project) {
+        return new Promise(function(resolve, reject) {
+            console.log("createNewProject");
+            return sendRequest("POST", {
+                    'path': "/projects",
+                    'body': {
+                        'project': new_project
+                    }
+                })
+                .then(function(response) {
+                    var _new_pid = response.headers.location.match(/\d+/)[0];
+                    console.log("new project created", _new_pid);
+                    console.log("old project", project.id);
+                    return resolve({
+                        new_pid: _new_pid,
+                        old_pid: project.id
+                    });
+                })
+                .catch(errorHandle);
+        });
+    }
+
+    function getUsers(data) {
+        console.log("getUsers");
+        return new Promise(function(resolve, reject) {
+            return sendRequest("GET", {
+                    'path': "/projects/" + data.old_pid + "/user_assignments"
+                })
+                .then(function(users) {
+                    console.log("received users");
+                    data.users = users;
+                    return resolve(data);
+                })
+                .catch(errorHandle);
+        });
+    }
+
+    function getTasks(data) {
+        console.log("getTasks");
+        return new Promise(function(resolve, reject) {
+            return sendRequest("GET", {
+                    'path': "/projects/" + data.old_pid + "/task_assignments"
+                })
+                .then(function(tasks) {
+                    console.log("received tasks");
+                    data.tasks = tasks;
+                    return resolve(data);
+                })
+                .catch(errorHandle);
+        });
+    }
+
+    function addUser(project, user) {
+        return new Promise(function(resolve, reject) {
+            return sendRequest("POST", {
+                    'path': "/projects/" + project + "/user_assignments",
+                    'body': user
+                })
+                .then(function() {
+                    return resolve();
+                })
+                .catch(errorHandle);
+        });
+    }
+
+    function addTask(project, task) {
+        return new Promise(function(resolve, reject) {
+            return sendRequest("POST", {
+                    'path': "/projects/" + project + "/task_assignments",
+                    'body': task
+                })
+                .then(function() {
+                    return resolve();
+                })
+                .catch(errorHandle);
+        });
+    }
+
+
+    function tidyUp() {
+        console.log("All done, toast is ready");
+    }
+
+    function toggleOldProject(data) {
+        return new Promise(function(resolve, reject) {
+            console.log("Archiving " + data.old_pid);
+            return sendRequest("PUT", {
+                    'path': "/projects/" + data.old_pid + "/toggle"
+                })
+                .then(function() {
+                    console.log("Archived Successful" + data.old_pid);
+                    resolve(data);
+                })
+                .catch(errorHandle);
+        });
+    }
+
+    function errorHandle(error) {
+        console.warn("caught error", error);
+    }
+
+    function processUsers(data) {
+        return new Promise(function(resolve, reject) {
+            var promise = Promise.resolve();
+            _.each(data.users, function copyUser(user) {
+                console.log("user_id", user.user_assignment.user_id);
+                promise = promise.then(function() {
+                    return addUser(data.new_pid, {
+                            'user': {
+                                'id': user.user_assignment.user_id
+                            }
+                        })
+                        .then(function() {
+                            console.log("user " + user.user_assignment.user_id + " added to " + data.new_pid);
+                        });
+                });
+            });
+            promise = promise.then(function() {
+                return resolve(data);
+            }).catch(errorHandle);
+        });
+    }
+
+    function proccessTasks(data) {
+        return new Promise(function(resolve, reject) {
+            var promise = Promise.resolve();
+            _.each(data.tasks, function copyTask(task) {
+                console.log("task_id", task.task_assignment.task_id);
+                promise = promise.then(function() {
+                    return addTask(data.new_pid, {
+                            'task': {
+                                'id': task.task_assignment.task_id
+                            }
+                        })
+                        .then(function() {
+                            console.log("Task " + task.task_assignment.task_id + " added to " + data.new_pid);
+                        });
+                });
+            });
+            promise = promise.then(function() {
+                return resolve(data);
+            }).catch(errorHandle);
+        });
+    }
+
+    function processProjects(projects) {
+        var promise = Promise.resolve();
+        _.each(projects, function projectLoop(contents) {
+            promise = promise.then(function() {
+                var _project = contents.project,
+                    _pid, _new_project = {},
+                    _new_pid;
+                //Check if project has a date YYYY-MM at the end of the project and is active
+                if ((_.has(_project, "name") && _project.name.endsWith(_last_month)) && _project.active) {
+                    _pid = _project.id;
+                    console.log("Project to update: " + _pid);
+                    cloneProject(_project, _new_project);
+
+                    //Set new project name
+                    _new_project.name = _project.name.match(/(.+)\d{4}\-\d{2}$/)[1] + moment().format("YYYY-MM");
+                    return createNewProject(_project, _new_project)
+                        .then(getUsers)
+                        .then(processUsers)
+                        .then(getTasks)
+                        .then(proccessTasks)
+                        .then(toggleOldProject)
+                        .catch(errorHandle);
+                }
+            });
+        });
+        promise = promise.then(function() {
+            tidyUp();
+        }).catch(errorHandle);
+    }
+
+    function cloneProject(old_project, new_project) {
+        //Clone project
+        _.each(old_project, function(value, key, list) {
+            if (_.has(list, key) && !_exclude_fields.includes(key)) {
+                new_project[key] = value;
+            }
+        });
+    }
+
+
+    console.log("Getting Projects");
+    sendRequest("GET", {
+            'path': "/projects"
+        })
+        .then(function result(response) {
+            console.log("Received Project list, processing");
+            processProjects(response);
+        })
+        .catch(function(err) {
+            console.log("Could not get Projects ", err);
+        });
 }());
