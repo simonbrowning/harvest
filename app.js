@@ -15,8 +15,7 @@
     var _last_month = moment().subtract(1, "month").format("YYYY-MM");
     var _exclude_fields = ['active_task_assignments_count', 'active_user_assignments_count', 'cache_version',
         'created_at', 'earliest_record_at', 'hint-earliest-record-at', 'hint-latest-record-at', 'id',
-        'latest_record_at', 'name', 'updated_at'
-    ];
+        'latest_record_at', 'name', 'updated_at'];
 
     function sendRequest(method, options) {
         return new Promise(function(resolve, reject) {
@@ -46,218 +45,208 @@
                     }
                 }
             }
-            console.log("API call: " + _options.uri);
-            //Make request
+            console.log("API call: "+ _options.uri);
+           //Make request
             throttledRequest(_options, function(err, resp, body) {
                 if (err || !/^2\d{2}$/.test(resp.statusCode)) {
-                    console.log(body);
-                    reject(body);
-                } else {
-                    console.log("success");
-                    if (resp.statusCode == 200) {
-                        resolve(body);
-                    } else if (resp.statusCode == 201) {
-                        resolve(resp);
-                    }
+                  reject(body.message);
+                } else{
+                  if (resp.statusCode == 200) {
+                    resolve(body);
+                  } else if(resp.statusCode == 201){
+                    resolve(resp);
+                  }
                 }
             });
         });
     }
 
-    function createNewProject(project, new_project) {
-        return new Promise(function(resolve, reject) {
-            console.log("createNewProject");
-            return sendRequest("POST", {
-                    'path': "/projects",
-                    'body': {
-                        'project': new_project
-                    }
-                })
-                .then(function(response) {
-                    var _new_pid = response.headers.location.match(/\d+/)[0];
-                    console.log("new project created", _new_pid);
-                    console.log("old project", project.id);
-                    return resolve({
-                        new_pid: _new_pid,
-                        old_pid: project.id
-                    });
-                })
-                .catch(errorHandle);
+    function createNewProject(project,new_project){
+      return new Promise(function(resolve, reject) {
+      console.log("createNewProject");
+      return sendRequest("POST",{'path':"/projects",'body': {'project': new_project}})
+        .then(function(response){
+          var _new_pid = response.headers.location.match(/\d+/)[0];
+          console.log("new project created",_new_pid);
+          console.log("old project",project.id);
+          return resolve({new_pid : _new_pid, old_pid : project.id});
+        })
+        .catch(function(err){
+          reject("Create Project: "+err);
         });
+      });
     }
 
     function getUsers(data) {
-        console.log("getUsers");
-        return new Promise(function(resolve, reject) {
-            return sendRequest("GET", {
-                    'path': "/projects/" + data.old_pid + "/user_assignments"
-                })
-                .then(function(users) {
-                    console.log("received users");
-                    data.users = users;
-                    return resolve(data);
-                })
-                .catch(errorHandle);
+      console.log("getUsers");
+      return new Promise(function(resolve, reject) {
+        return  sendRequest("GET",{'path': "/projects/"+data.old_pid+"/user_assignments"})
+        .then(function(users){
+          console.log("received users");
+          data.users = users;
+          return resolve(data);
+        })
+        .catch(function(err){
+          reject("Get Users: "+err);
         });
+      });
     }
 
     function getTasks(data) {
-        console.log("getTasks");
-        return new Promise(function(resolve, reject) {
-            return sendRequest("GET", {
-                    'path': "/projects/" + data.old_pid + "/task_assignments"
-                })
-                .then(function(tasks) {
-                    console.log("received tasks");
-                    data.tasks = tasks;
-                    return resolve(data);
-                })
-                .catch(errorHandle);
+      console.log("getTasks");
+      return new Promise(function(resolve, reject) {
+        return  sendRequest("GET",{'path':"/projects/"+data.old_pid+"/task_assignments"})
+        .then(function(tasks){
+          console.log("received tasks");
+          data.tasks = tasks;
+          return resolve(data);
+        })
+        .catch(function(err){
+          reject("Get Tasks: "+err);
         });
+      });
     }
 
-    function addUser(project, user) {
-        return new Promise(function(resolve, reject) {
-            return sendRequest("POST", {
-                    'path': "/projects/" + project + "/user_assignments",
-                    'body': user
-                })
-                .then(function() {
-                    return resolve();
-                })
-                .catch(errorHandle);
-        });
+    function addUser(project,user) {
+      return new Promise(function(resolve, reject) {
+        return  sendRequest("POST",{'path': "/projects/"+project+"/user_assignments",'body': user})
+            .then(function() {
+              return resolve();
+            })
+            .catch(function(err){
+              reject("Add User: "+err);
+            });
+      });
     }
 
-    function addTask(project, task) {
-        return new Promise(function(resolve, reject) {
-            return sendRequest("POST", {
-                    'path': "/projects/" + project + "/task_assignments",
-                    'body': task
-                })
-                .then(function() {
-                    return resolve();
-                })
-                .catch(errorHandle);
-        });
+    function addTask(project,task) {
+      return new Promise(function(resolve, reject) {
+        return  sendRequest("POST",{'path': "/projects/"+project+"/task_assignments",'body': task})
+            .then(function() {
+              return resolve();
+            })
+            .catch(function(err){
+              reject("Add Task: "+err);
+            });
+      });
     }
 
 
     function tidyUp() {
-        console.log("All done, toast is ready");
+      console.log("All done, toast is ready");
     }
 
     function toggleOldProject(data) {
-        return new Promise(function(resolve, reject) {
-            console.log("Archiving " + data.old_pid);
-            return sendRequest("PUT", {
-                    'path': "/projects/" + data.old_pid + "/toggle"
-                })
-                .then(function() {
-                    console.log("Archived Successful" + data.old_pid);
-                    resolve(data);
-                })
-                .catch(errorHandle);
-        });
+      return new Promise(function(resolve, reject) {
+        console.log("Archiving: "+ data.old_pid);
+        return  sendRequest("PUT",{'path':  "/projects/" + data.old_pid + "/toggle"})
+          .then(function(){
+            console.log("Successfully archived: "+ data.old_pid);
+            resolve(data);
+          })
+          .catch(function(err){
+            reject("Toggle Project: "+err);
+          });
+      });
     }
 
-    function errorHandle(error) {
-        console.warn("caught error", error);
+    function errorHandle(err) {
+      console.warn(">>>",err);
     }
 
-    function processUsers(data) {
-        return new Promise(function(resolve, reject) {
-            var promise = Promise.resolve();
-            _.each(data.users, function copyUser(user) {
-                console.log("user_id", user.user_assignment.user_id);
-                promise = promise.then(function() {
-                    return addUser(data.new_pid, {
-                            'user': {
-                                'id': user.user_assignment.user_id
-                            }
-                        })
-                        .then(function() {
-                            console.log("user " + user.user_assignment.user_id + " added to " + data.new_pid);
-                        });
-                });
+    function  processUsers(data){
+      return new Promise(function(resolve, reject) {
+        var promise = Promise.resolve();
+          _.each(data.users,function copyUser(user){
+          console.log("user_id", user.user_assignment.user_id);
+          promise = promise.then(function() {
+            return addUser(data.new_pid,{'user': {'id': user.user_assignment.user_id}})
+              .then(function(){
+                console.log("user "+user.user_assignment.user_id+" added to "+ data.new_pid);
+              });
             });
-            promise = promise.then(function() {
-                return resolve(data);
-            }).catch(errorHandle);
         });
+        promise = promise.then(function(){
+          return resolve(data);
+        })
+        .catch(function(err){
+          reject("Proccess Users: "+err);
+        });
+      });
     }
 
     function proccessTasks(data) {
-        return new Promise(function(resolve, reject) {
-            var promise = Promise.resolve();
-            _.each(data.tasks, function copyTask(task) {
-                console.log("task_id", task.task_assignment.task_id);
-                promise = promise.then(function() {
-                    return addTask(data.new_pid, {
-                            'task': {
-                                'id': task.task_assignment.task_id
-                            }
-                        })
-                        .then(function() {
-                            console.log("Task " + task.task_assignment.task_id + " added to " + data.new_pid);
-                        });
-                });
-            });
-            promise = promise.then(function() {
-                return resolve(data);
-            }).catch(errorHandle);
-        });
-    }
-
-    function processProjects(projects) {
+      return new Promise(function(resolve, reject) {
         var promise = Promise.resolve();
-        _.each(projects, function projectLoop(contents) {
-            promise = promise.then(function() {
-                var _project = contents.project,
-                    _pid, _new_project = {},
-                    _new_pid;
-                //Check if project has a date YYYY-MM at the end of the project and is active
-                if ((_.has(_project, "name") && _project.name.endsWith(_last_month)) && _project.active) {
-                    _pid = _project.id;
-                    console.log("Project to update: " + _pid);
-                    cloneProject(_project, _new_project);
-
-                    //Set new project name
-                    _new_project.name = _project.name.match(/(.+)\d{4}\-\d{2}$/)[1] + moment().format("YYYY-MM");
-                    return createNewProject(_project, _new_project)
-                        .then(getUsers)
-                        .then(processUsers)
-                        .then(getTasks)
-                        .then(proccessTasks)
-                        .then(toggleOldProject)
-                        .catch(errorHandle);
-                }
+          _.each(data.tasks,function copyTask(task){
+          console.log("task_id", task.task_assignment.task_id);
+          promise = promise.then(function() {
+            return addTask(data.new_pid,{'task': {'id': task.task_assignment.task_id}})
+              .then(function(){
+                console.log("Task "+task.task_assignment.task_id+" added to "+ data.new_pid);
+              });
             });
         });
-        promise = promise.then(function() {
-            tidyUp();
-        }).catch(errorHandle);
+        promise = promise.then(function(){
+          return resolve(data);
+        })
+        .catch(function(err){
+          reject("Proccess Tasks: "+err);
+        });
+      });
     }
 
-    function cloneProject(old_project, new_project) {
-        //Clone project
-        _.each(old_project, function(value, key, list) {
-            if (_.has(list, key) && !_exclude_fields.includes(key)) {
-                new_project[key] = value;
+    function processProjects(projects){
+      var promise = Promise.resolve();
+        _.each(projects,function projectLoop(contents) {
+          promise = promise.then(function() {
+            var _project = contents.project, _pid, _new_project = {},_new_pid;
+            //Check if project has a date YYYY-MM at the end of the project and is active
+            if ((_.has(_project, "name") && _project.name.endsWith(_last_month)) && _project.active) {
+                _pid = _project.id;
+                console.log("Project to update: " + _pid);
+                cloneProject(_project,_new_project);
+
+                //Set new project name
+                _new_project.name = _project.name.match(/(.+)\d{4}\-\d{2}$/)[1] + moment().format("YYYY-MM");
+                return createNewProject(_project,_new_project)
+                      .then(getUsers)
+                      .then(processUsers)
+                      .then(getTasks)
+                      .then(proccessTasks)
+                      .then(toggleOldProject)
+                      .catch(function(err){
+                        errorHandle(err);
+                        //reject();
+                      });
             }
         });
+      });
+      promise = promise.then(function() {
+        tidyUp();
+      })
+      .catch(function(err){
+        console.log("Proccess Project: "+err);
+      });
+    }
+
+    function cloneProject(old_project,new_project){
+      //Clone project
+      _.each(old_project, function(value, key, list) {
+          if (_.has(list, key) && !_exclude_fields.includes(key)) {
+              new_project[key] = value;
+          }
+      });
     }
 
 
-    console.log("Getting Projects");
-    sendRequest("GET", {
-            'path': "/projects"
-        })
+      console.log("Getting Projects");
+      sendRequest("GET",{'path':"/projects"})
         .then(function result(response) {
-            console.log("Received Project list, processing");
-            processProjects(response);
+          console.log("Received Project list, processing");
+          processProjects(response);
         })
         .catch(function(err) {
-            console.log("Could not get Projects ", err);
+          console.log("Could not get Projects ",err);
         });
 }());
