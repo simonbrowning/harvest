@@ -119,11 +119,12 @@
       });
     }
 
-    function addTask(project,task) {
+    function addTask(project,task,old_task) {
       return new Promise(function(resolve, reject) {
         return  sendRequest("POST",{'path': "/projects/"+project+"/task_assignments",'body': task})
-            .then(function() {
-              return resolve();
+            .then(function(response) {
+              var tid = response.headers.location.match(/\d+$/)[0];
+              return updateNewTask(tid,old_task,project);
             })
             .catch(function(err){
               reject("Add Task: "+err);
@@ -131,6 +132,25 @@
       });
     }
 
+    function updateNewTask(tid,task,project) {
+      console.log("updateNewTask",tid);
+      var task_update = {
+          "task_assignment": {
+            "budget": task.budet,
+            "estimate": task.estimate
+          }
+        };
+      return new Promise(function(resolve, reject) {
+        return  sendRequest("PUT",{'path': "/projects/"+project+"/task_assignments/"+tid,'body': task_update})
+            .then(function() {
+              console.log("Task "+ tid+ " updated");
+              return resolve();
+            })
+            .catch(function(err){
+              reject("Update Task: "+err);
+            });
+      });
+    }
 
     function tidyUp() {
       console.log("All done, toast is ready");
@@ -181,7 +201,7 @@
           _.each(data.tasks,function copyTask(task){
           console.log("task_id", task.task_assignment.task_id);
           promise = promise.then(function() {
-            return addTask(data.new_pid,{'task': {'id': task.task_assignment.task_id}})
+            return addTask(data.new_pid,{'task': {'id': task.task_assignment.task_id}},task)
               .then(function(){
                 console.log("Task "+task.task_assignment.task_id+" added to "+ data.new_pid);
               });
