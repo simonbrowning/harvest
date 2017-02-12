@@ -124,7 +124,10 @@
         return  sendRequest("POST",{'path': "/projects/"+project+"/task_assignments",'body': task})
             .then(function(response) {
               var tid = response.headers.location.match(/\d+$/)[0];
-              return updateNewTask(tid,old_task,project);
+               updateNewTask(tid,old_task,project)
+                .then(function() {
+                  return resolve();
+                });
             })
             .catch(function(err){
               reject("Add Task: "+err);
@@ -134,10 +137,11 @@
 
     function updateNewTask(tid,task,project) {
       console.log("updateNewTask",tid);
+
       var task_update = {
           "task_assignment": {
-            "budget": task.budet,
-            "estimate": task.estimate
+            "budget": task.task_assignment.budet,
+            "estimate": task.task_assignment.estimate
           }
         };
       return new Promise(function(resolve, reject) {
