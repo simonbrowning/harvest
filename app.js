@@ -20,6 +20,7 @@
     function sendRequest(method, options) {
         return new Promise(function(resolve, reject) {
             if (!(_.has(options, "path")) || !method) {
+                log.warn("No path / method was set");
                 reject("No path / method was set");
             }
             //Options for reqest
@@ -49,7 +50,8 @@
            //Make request
             throttledRequest(_options, function(err, resp, body) {
                 if (err || !/^2\d{2}$/.test(resp.statusCode)) {
-                  reject(body.message);
+                  log.warn("Request failed");
+                  reject("Request failed",body);
                 } else{
                   if (resp.statusCode == 200) {
                     resolve(body);
@@ -67,8 +69,8 @@
       return sendRequest("POST",{'path':"/projects",'body': {'project': new_project}})
         .then(function(response){
           var _new_pid = response.headers.location.match(/\d+/)[0];
-          log.info("New project created",_new_pid);
-          log.info("Old project",project.id);
+          log.info("New project created: "+_new_pid);
+          log.info("Old project: "+project.id);
           return resolve({new_pid : _new_pid, old_pid : project.id});
         })
         .catch(function(err){
@@ -113,7 +115,7 @@
     }
 
     function addUser(project,user) {
-      log.info("Add user "+ user.user.user_id);
+      log.info("Add user "+ user.user.id);
       return new Promise(function(resolve, reject) {
         return  sendRequest("POST",{'path': "/projects/"+project+"/user_assignments",'body': user})
             .then(function() {
@@ -164,6 +166,7 @@
 
     function tidyUp() {
       log.info("All done, toast is ready");
+      process.exit(0);
     }
 
     function toggleOldProject(data) {
