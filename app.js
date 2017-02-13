@@ -4,8 +4,8 @@
         throttledRequest = require("throttled-request")(r),
         config = require("config"),
         _ = require("underscore"),
-        moment = require("moment");
-
+        moment = require("moment"),
+        log = require('simple-node-logger').createRollingFileLogger( config.logger );
     //Setting Throttle Config for Harvest rate limiter
     throttledRequest.configure({
         requests: 70,
@@ -45,7 +45,7 @@
                     }
                 }
             }
-            console.log("API call: "+ _options.uri);
+            log.info("API call: "+ _options.uri);
            //Make request
             throttledRequest(_options, function(err, resp, body) {
                 if (err || !/^2\d{2}$/.test(resp.statusCode)) {
@@ -63,58 +63,64 @@
 
     function createNewProject(project,new_project){
       return new Promise(function(resolve, reject) {
-      console.log("createNewProject");
+      log.info("Create new project");
       return sendRequest("POST",{'path':"/projects",'body': {'project': new_project}})
         .then(function(response){
           var _new_pid = response.headers.location.match(/\d+/)[0];
-          console.log("new project created",_new_pid);
-          console.log("old project",project.id);
+          log.info("New project created",_new_pid);
+          log.info("Old project",project.id);
           return resolve({new_pid : _new_pid, old_pid : project.id});
         })
         .catch(function(err){
-          reject("Create Project: "+err);
+          reject("Create project: "+err);
         });
       });
     }
 
+    function  checkForNewProject(projects,client_id,name){
+      log.info("Checking to see if project already exists");
+      return _.find(projects, function(o) { return (o.project.client_id === client_id && o.project.name === name); });
+    }
+
     function getUsers(data) {
-      console.log("getUsers");
+      log.info("Fetch users");
       return new Promise(function(resolve, reject) {
         return  sendRequest("GET",{'path': "/projects/"+data.old_pid+"/user_assignments"})
         .then(function(users){
-          console.log("received users");
+          log.info("Received users");
           data.users = users;
           return resolve(data);
         })
         .catch(function(err){
-          reject("Get Users: "+err);
+          reject("Get users: "+err);
         });
       });
     }
 
     function getTasks(data) {
-      console.log("getTasks");
+      log.info("Fetch Tasks");
       return new Promise(function(resolve, reject) {
         return  sendRequest("GET",{'path':"/projects/"+data.old_pid+"/task_assignments"})
         .then(function(tasks){
-          console.log("received tasks");
+          log.info("Received tasks");
           data.tasks = tasks;
           return resolve(data);
         })
         .catch(function(err){
-          reject("Get Tasks: "+err);
+          reject("Get tasks: "+err);
         });
       });
     }
 
     function addUser(project,user) {
+      log.info("Add user "+ user.user.user_id);
       return new Promise(function(resolve, reject) {
         return  sendRequest("POST",{'path': "/projects/"+project+"/user_assignments",'body': user})
             .then(function() {
               return resolve();
             })
             .catch(function(err){
-              reject("Add User: "+err);
+              reject("Add user: "+err);
             });
       });
     }
@@ -130,13 +136,13 @@
                 });
             })
             .catch(function(err){
-              reject("Add Task: "+err);
+              reject("Add task failed "+old_task+" : "+err);
             });
       });
     }
 
     function updateNewTask(tid,task,project) {
-      console.log("updateNewTask",tid);
+      log.info("Update task: "+tid);
 
       var task_update = {
           "task_assignment": {
@@ -147,46 +153,45 @@
       return new Promise(function(resolve, reject) {
         return  sendRequest("PUT",{'path': "/projects/"+project+"/task_assignments/"+tid,'body': task_update})
             .then(function() {
-              console.log("Task "+ tid+ " updated");
+              log.info("Task "+ tid+ " updated");
               return resolve();
             })
             .catch(function(err){
-              reject("Update Task: "+err);
+              reject("Update task "+tid+" failed: "+err);
             });
       });
     }
 
     function tidyUp() {
-      console.log("All done, toast is ready");
+      log.info("All done, toast is ready");
     }
 
     function toggleOldProject(data) {
       return new Promise(function(resolve, reject) {
-        console.log("Archiving: "+ data.old_pid);
+        log.info("Archiving: "+ data.old_pid);
         return  sendRequest("PUT",{'path':  "/projects/" + data.old_pid + "/toggle"})
           .then(function(){
-            console.log("Successfully archived: "+ data.old_pid);
+            log.info("Successfully archived: "+ data.old_pid);
             resolve(data);
           })
           .catch(function(err){
-            reject("Toggle Project: "+err);
+            reject("Toggle project: "+err);
           });
       });
     }
 
     function errorHandle(err) {
-      console.warn(">>>",err);
+      log.warn(err);
     }
 
     function  processUsers(data){
       return new Promise(function(resolve, reject) {
         var promise = Promise.resolve();
           _.each(data.users,function copyUser(user){
-          console.log("user_id", user.user_assignment.user_id);
           promise = promise.then(function() {
             return addUser(data.new_pid,{'user': {'id': user.user_assignment.user_id}})
               .then(function(){
-                console.log("user "+user.user_assignment.user_id+" added to "+ data.new_pid);
+                log.info("User "+user.user_assignment.user_id+" added to "+ data.new_pid);
               });
             });
         });
@@ -194,7 +199,7 @@
           return resolve(data);
         })
         .catch(function(err){
-          reject("Proccess Users: "+err);
+          reject("Proccess users: "+err);
         });
       });
     }
@@ -203,11 +208,11 @@
       return new Promise(function(resolve, reject) {
         var promise = Promise.resolve();
           _.each(data.tasks,function copyTask(task){
-          console.log("task_id", task.task_assignment.task_id);
+          log.info("Process task", task.task_assignment.task_id);
           promise = promise.then(function() {
             return addTask(data.new_pid,{'task': {'id': task.task_assignment.task_id}},task)
               .then(function(){
-                console.log("Task "+task.task_assignment.task_id+" added to "+ data.new_pid);
+                log.info("Task "+task.task_assignment.task_id+" added to "+ data.new_pid);
               });
             });
         });
@@ -215,7 +220,7 @@
           return resolve(data);
         })
         .catch(function(err){
-          reject("Proccess Tasks: "+err);
+          reject("Proccess tasks: "+err);
         });
       });
     }
@@ -224,15 +229,22 @@
       var promise = Promise.resolve();
         _.each(projects,function projectLoop(contents) {
           promise = promise.then(function() {
-            var _project = contents.project, _pid, _new_project = {},_new_pid;
+            var _project = contents.project, _pid, _new_project = {},_new_pid,_exists;
             //Check if project has a date YYYY-MM at the end of the project and is active
             if ((_.has(_project, "name") && _project.name.endsWith(_last_month)) && _project.active) {
                 _pid = _project.id;
-                console.log("Project to update: " + _pid);
-                cloneProject(_project,_new_project);
+                log.info("Project to process: " + _pid);
 
                 //Set new project name
                 _new_project.name = _project.name.match(/(.+)\d{4}\-\d{2}$/)[1] + moment().format("YYYY-MM");
+
+                _exists = checkForNewProject(projects,_project.client_id,_new_project.name);
+                if(_exists){
+                  log.info("New project already exists");
+                  return false;
+                }
+
+                cloneProject(_project,_new_project);
                 return createNewProject(_project,_new_project)
                       .then(getUsers)
                       .then(processUsers)
@@ -241,7 +253,6 @@
                       .then(toggleOldProject)
                       .catch(function(err){
                         errorHandle(err);
-                        //reject();
                       });
             }
         });
@@ -250,7 +261,7 @@
         tidyUp();
       })
       .catch(function(err){
-        console.log("Proccess Project: "+err);
+        log.info("Proccess project: "+err);
       });
     }
 
@@ -264,13 +275,15 @@
     }
 
 
-      console.log("Getting Projects");
+      log.info("Getting projects");
       sendRequest("GET",{'path':"/projects"})
         .then(function result(response) {
-          console.log("Received Project list, processing");
+          log.info("Received project list, processing");
           processProjects(response);
         })
         .catch(function(err) {
-          console.log("Could not get Projects ",err);
+          log.error("Could not get Projects ",err);
+          log.info("Exiting...");
+          process.exit(1);
         });
 }());
