@@ -66,8 +66,8 @@
                 })
                 .then(function(response) {
                     var _new_pid = response.headers.location.match(/\d+/)[0];
-                    log.info("New project created", _new_pid);
-                    log.info("Old project", project.id);
+                    log.info("New project created: ", _new_pid);
+                    log.info("Old project: ", project.id);
                     return resolve({
                         new_pid: _new_pid,
                         old_pid: project.id
@@ -116,18 +116,44 @@
                 });
         });
     }
-    function addUser(project, user) {
-        log.info("Add user " + user.user.user_id);
+
+    function updateUser(id,project,user){
+      log.info("User to Update: ",user.user_assignment.id);
+      log.info("User is Project Manager: ",(user.user_assignment.is_project_manager ? "true" : "false"));
+      return new Promise(function(resolve,reject){
+        return sendRequest("PUT", {
+                'path': "/projects/" + project + "/user_assignments/"+id,
+                'body': {
+                  "user_assignment": {
+                    "is_project_manager": user.user_assignment.is_project_manager
+                  }
+                }
+            })
+            .then(function(response){
+              log.info("User updated: "+id);
+              return resolve();
+            })
+            .catch(function(err){
+              return reject("Update User: "+ err);
+            });
+      });
+    }
+
+    function addUser(project, user,userObj) {
+        log.info("User to add: " +user.user.id);
         return new Promise(function(resolve, reject) {
             return sendRequest("POST", {
                     'path': "/projects/" + project + "/user_assignments",
                     'body': user
                 })
-                .then(function() {
-                    return resolve();
+                .then(function(response) {
+                  var id = response.body.id;
+                  log.info("Returned user ID: "+ id);
+                    return updateUser(id,project,userObj)
+                    .then(resolve);
                 })
                 .catch(function(err) {
-                    reject("Add user: " + err);
+                    return reject("Added user: " + err);
                 });
         });
     }
@@ -201,7 +227,7 @@
                             'user': {
                                 'id': user.user_assignment.user_id
                             }
-                        })
+                        },user)
                         .then(function() {
                             log.info("User " + user.user_assignment.user_id + " added to " + data.new_pid);
                         });
@@ -211,7 +237,7 @@
                     return resolve(data);
                 })
                 .catch(function(err) {
-                    reject("Proccess users: " + err);
+                    reject("Process users: " + err);
                 });
         });
     }
