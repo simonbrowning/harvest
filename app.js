@@ -8,7 +8,11 @@ const r = require('request'),
   SimpleNodeLogger = require('simple-node-logger');
 
 //START configuration
-const services_project_id = 14515764,
+
+const config = loadFile('config/config.json');
+let oldClientList = loadFile('config/previousClients.js');
+
+const services_project_id = config.harvest.default_project,
   last_month = moment().subtract(1, "month").format("YYYY-MM"),
   exclude_fields = [
     'active',
@@ -45,8 +49,7 @@ function loadFile(fileName) {
 }
 
 //load required files
-const config = loadFile('config/config.json');
-let oldClientList = loadFile('config/previousClients.js');
+
 
 //setup logging
 const log = SimpleNodeLogger.createRollingFileLogger(config.logger);
