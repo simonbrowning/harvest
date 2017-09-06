@@ -205,9 +205,7 @@ function processProjects(projects) {
 					//Set new project name
 					new_project.name =
 						project.name.match(/(.+)\d{4}\-\d{2}$/)[1] +
-						moment()
-							.add(1, 'month')
-							.format('YYYY-MM');
+						moment().format('YYYY-MM');
 					exists = checkForNewProject(
 						projects,
 						project.client_id,
@@ -217,9 +215,40 @@ function processProjects(projects) {
 						log.info('New project already exists');
 						resolve();
 					} else {
-						createProject(new_project, project)
-							.then(resolve)
-							.catch(reject);
+						getHoursUsed(project).then(function(hours_used) {
+							let excess_hours,
+								remaining_hours,
+								monthly_hours = parseInt(
+									/client\_hours\:(\d+)/.test(project.notes)
+										? project.notes.match(/client\_hours\:(\d+)/)[1]
+										: '0'
+								),
+								client_bucket = parseInt(
+									/client\_bucket\:(\d+)/.test(project.notes)
+										? project.notes.match(/client\_bucket\:(\d+)/)[1]
+										: '0'
+								),
+								remaining_bucket = /remaining\_bucket\:(\d+)/.test(
+									project.notes
+								)
+									? parseInt(project.notes.match(/remaining\_bucket\:(\d+)/)[1])
+									: null;
+
+							if (hours_used > monthly_hours) {
+								excess_hours = hours_used - monthly_hours;
+								remaining_hours =
+									(remaining_bucket || client_bucket) - excess_hours;
+								remaining_bucket = remaining_hours < 0 ? 0 : remaining_hours;
+							} else {
+								remaining_bucket = remaining_bucket || client_bucket;
+							}
+							new_project.estimate = remaining_bucket + monthly_hours;
+							new_project.notes = `client_hours:${monthly_hours};client_bucket:${client_bucket};remaining_bucket:${remaining_bucket}`;
+
+							createProject(new_project, project)
+								.then(resolve)
+								.catch(reject);
+						});
 					}
 				} else {
 					resolve();
@@ -321,7 +350,7 @@ function addUser(project, user, userObj) {
 			body: user
 		})
 			.then(function(response) {
-				let id = JSON.parse(response.request.body).user.id;
+				let id = response.headers.location.match(/\d+$/)[0];
 				log.info('Returned user ID: ' + id);
 				return updateUser(id, project, userObj).then(resolve);
 			})
@@ -560,7 +589,7 @@ function getHoursUsed(project) {
 			path: `/projects/${project.id}/entries?from=${start_date}&to=${end_date}`
 		}).then(function(report) {
 			sendRequest('GET', {
-				path: `/projects/${project}/task_assignments`
+				path: `/projects/${project.id}/task_assignments`
 			}).then(function(tasks) {
 				// return resolve({ report: report, tasks: tasks });
 				let hours_used = 0;
@@ -569,9 +598,8 @@ function getHoursUsed(project) {
 					if (isBillableTask(day.task_id, tasks)) {
 						hours_used += day.hours;
 					}
-
-					return resolve(hours_used);
 				});
+				return resolve(hours_used);
 			});
 		});
 	});
