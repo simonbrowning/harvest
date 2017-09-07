@@ -1,42 +1,26 @@
-//Load dependies
-const r = require('request'),
-	throttledRequest = require('throttled-request')(r),
-	CronJob = require('cron').CronJob,
-	_ = require('underscore'),
-	fs = require('fs'),
-	moment = require('moment'),
-	SimpleNodeLogger = require('simple-node-logger');
+console.log(process.env.NODE_ENV);
 
+//Load dependies
+const CronJob = require('cron').CronJob,
+	_ = require('underscore'),
+	moment = require('moment'),
+	SimpleNodeLogger = require('simple-node-logger'),
+	config = require('./config');
+
+sendRequest = require('./actions/sendRequest');
+loadFile = require('./actions/loadFile');
 //END dependies
 
 //Load File function
-function loadFile(fileName) {
-	const fileCheck = fs.existsSync(fileName);
-	if (fileCheck) {
-		let data = fs.readFileSync(fileName, 'utf8');
-
-		if (data.length !== 0) {
-			console.log(`read file, ${fileName}`);
-			return JSON.parse(data);
-		} else {
-			return null;
-		}
-	} else {
-		console.log(`${fileName} does not exist`);
-		return null;
-	}
-} //loadFile
 
 //START configuration
 
-const config = loadFile('config/config.json');
 let oldClientList = loadFile('config/previousClients.js');
 
 const services_project_id = config.harvest.default_project,
 	last_month = moment()
 		.subtract(1, 'month')
 		.format('YYYY-MM'),
-	//last_month = moment().format('YYYY-MM'),
 	exclude_fields = [
 		'active',
 		'active_task_assignments_count',
@@ -60,64 +44,10 @@ let service_project,
 	client_is_running = 0,
 	rollover_is_running = 0;
 //setup logging
+
 const log = SimpleNodeLogger.createRollingFileLogger(config.logger);
 
-//configure request throttle
-throttledRequest.configure({
-	requests: 45,
-	milliseconds: 7500
-});
 //END configuration
-
-//function for sending requests
-function sendRequest(method, options, cb) {
-	return new Promise(function(resolve, reject) {
-		let data = '',
-			response;
-		if (!_.has(options, 'path') || !method) {
-			log.info('No path / method was set');
-		}
-		//Options for reqest
-		const _options = {
-			method: method,
-			uri: config.harvest.project_url,
-			headers: {
-				'User-Agent': 'node-harvest',
-				'Content-Type': 'application/json',
-				Accept: 'application/json',
-				Authorization: config.harvest.auth
-			},
-			json: true // Automatically parses the JSON string in the response
-		};
-		//Loop through and merge options
-		for (let key in options) {
-			if (options.hasOwnProperty(key)) {
-				if (key === 'path') {
-					_options.uri += options[key];
-				} else {
-					_options[key] = options[key];
-				}
-			}
-		}
-		log.info(`${method} call: ${_options.uri}`);
-		//Make request
-		throttledRequest(_options)
-			.on('response', function(resp) {
-				response = resp;
-				if (/5\d{2}|4\d{2}/.test(response.statusCode)) {
-					return reject(response.statusMessage);
-				} else if (/201|203/.test(response.statusCode)) {
-					return resolve(response);
-				}
-			})
-			.on('data', function(chunk) {
-				data += chunk;
-			})
-			.on('end', function() {
-				resolve(JSON.parse(data || '{}'));
-			});
-	});
-} //sendRequest
 
 //get active clients
 function getActiveClients(clients) {
@@ -617,24 +547,22 @@ function isBillableTask(id, tasks) {
 //cron job for monthly roll over
 log.info('Setup rollover cronjob');
 const monthlyRolloverJob = new CronJob(
-	'* * * 01 */1 *',
+	'* * * 06 */1 *',
 	function() {
-		setTimeout(function() {
-			if (!rollover_is_running) {
-				rollover_is_running = 1;
-				log.info('Monthly rollover triggered');
-				sendRequest('GET', { path: '/projects' })
-					.then(processProjects)
-					.then(function() {
-						log.info('monthlyRolloverJob has finished');
-						rollover_is_running = 0;
-					})
-					.catch(function(err) {
-						log.warn('Something failed: ' + err);
-						rollover_is_running = 0;
-					});
-			}
-		}, 5000);
+		if (!rollover_is_running) {
+			rollover_is_running = 1;
+			log.info('Monthly rollover triggered');
+			sendRequest('GET', { path: '/projects' })
+				.then(processProjects)
+				.then(function() {
+					log.info('monthlyRolloverJob has finished');
+					rollover_is_running = 0;
+				})
+				.catch(function(err) {
+					log.warn('Something failed: ' + err);
+					rollover_is_running = 0;
+				});
+		}
 	},
 	function() {
 		/* This function is executed when the job stops */

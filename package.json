@@ -1,23 +1,22 @@
 {
-  "name": "harvest-project-rollover",
-  "version": "1.0.0",
-  "description": "A nodeJS script for updating Harvest Project on a scheduled basis.",
-  "main": "app.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [
-    "Harvest",
-    "nodeJS"
-  ],
-  "author": "Simon Browning",
-  "license": "ISC",
-  "dependencies": {
-    "config": "^1.24.0",
-    "moment": "^2.17.1",
-    "request": "^2.79.0",
-    "simple-node-logger": "^0.93.14",
-    "throttled-request": "^0.1.1",
-    "underscore": "^1.8.3"
-  }
+	"name": "harvest-project-rollover",
+	"version": "1.0.0",
+	"description":
+		"A nodeJS script for updating Harvest Project on a scheduled basis.",
+	"main": "app.js",
+	"scripts": {
+		"dev": "NODE_ENV=dev node app.js",
+		"prod": "NODE_ENV=production node app.js"
+	},
+	"keywords": ["Harvest", "nodeJS"],
+	"author": "Simon Browning",
+	"license": "ISC",
+	"dependencies": {
+		"config": "^1.24.0",
+		"moment": "^2.17.1",
+		"request": "^2.79.0",
+		"simple-node-logger": "^0.93.14",
+		"throttled-request": "^0.1.1",
+		"underscore": "^1.8.3"
+	}
 }
