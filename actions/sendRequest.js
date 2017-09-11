@@ -1,10 +1,13 @@
 const r = require('request'),
 	throttledRequest = require('throttled-request')(r),
 	_ = require('underscore'),
-	config = require('../config');
+	config = require('../config'),
+	retry = require('retry');
 
 //configure request throttle
 throttledRequest.configure(config.throttle);
+
+const operation = retry.operation(config.retry);
 
 //function for sending requests
 const sendRequest = function(method, options, cb) {
@@ -38,10 +41,15 @@ const sendRequest = function(method, options, cb) {
 		}
 		//Make request
 		throttledRequest(_options)
+			//TODO: Add rety method for failed requests
 			.on('response', function(resp) {
 				response = resp;
 				if (/5\d{2}|4\d{2}/.test(response.statusCode)) {
-					return reject(response.statusMessage);
+					if (/5\d{2}/.test(response.statusCode)) {
+					} else {
+						console.log('reject');
+						return reject(response.statusMessage);
+					}
 				} else if (/201|203/.test(response.statusCode)) {
 					return resolve(response);
 				}
