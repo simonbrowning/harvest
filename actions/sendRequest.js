@@ -42,7 +42,6 @@ const sendRequest = function(method, options, cb) {
 		const send = function(options, cb, retry) {
 			let data = '';
 			throttledRequest(options)
-				//TODO: Add rety method for failed requests
 				.on('response', function(resp) {
 					response = resp;
 					if (/201|203/.test(response.statusCode)) {
