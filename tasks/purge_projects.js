@@ -14,7 +14,7 @@ function callback(body) {
 		let PID = Obj.project.id;
 		if (PID != config.harvest.default_project) {
 			console.log(`${PID} to be deleted.`);
-			sendRequest('GET', { path: `/projects/${PID}/` })
+			sendRequest('DELETE', { path: `/projects/${PID}/` })
 				.then(function() {
 					console.log(`${PID} deleted.`);
 				})
