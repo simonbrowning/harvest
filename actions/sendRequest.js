@@ -51,7 +51,7 @@ const sendRequest = function(method, options, cb) {
 							console.log('500 error, retrying');
 							setTimeout(function() {
 								send(options, cb, ++retry);
-							}, (Math.floor(config.retry.timeout * (Math.random() * 10)));
+							}, Math.floor(config.retry.timeout * (Math.random() * 10)));
 						} else {
 							console.log('Giving up');
 							cb('failed', response.statusMessage);
