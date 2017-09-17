@@ -7,7 +7,7 @@ const r = require('request'),
 throttledRequest.configure(config.throttle);
 
 //function for sending requests
-const sendRequest = function(method, options, cb) {
+const sendRequest = function(method, options) {
 	return new Promise(function(resolve, reject) {
 		let response;
 		if (!_.has(options, 'path') || !method) {
@@ -64,7 +64,7 @@ const sendRequest = function(method, options, cb) {
 					data += chunk;
 				})
 				.on('end', function() {
-					if (!/5\d{2}/.test(response.statusCode)) {
+					if (!/5\d{2}|201|203/.test(response.statusCode)) {
 						cb('success', JSON.parse(data || '{}'));
 					}
 				});

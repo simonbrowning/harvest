@@ -1,24 +1,28 @@
-const http = require('http');
-const { fork } = require('child_process');
+const express = require('express'),
+	bodyParser = require('body-parser'),
+	_ = require('underscore'),
+	{ execFile } = require('child_process');
 
-const server = http.createServer();
+const app = express();
 
-server.on('request', (req, res) => {
-	if (req.url === '/api/client') {
-		const compute = fork('client.js');
-		compute.send('start');
-		compute.on('message', msg => {
-			console.log(compute.pid);
-			compute.kill();
-			res.end(msg);
-		});
-		//res.end(req.body);
-	} else {
-		console.log(req.url);
-		res.statusCode = 503;
-		res.end('not here');
-	}
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.post('/api/client', function(req, res) {
+	//TODO: validate request, account etc..
+	let args = [`${__dirname}/client.js`];
+
+	_.each(req.body, function(value, key) {
+		args.push(`${key}='${value}'`);
+	});
+
+	const sub = execFile('node', args, {
+		detached: true,
+		stdio: 'ignore'
+	});
+	return res.send('');
 });
 
-server.listen(3000);
-console.log(`Server is listening on http://localhost:3000`);
+const server = app.listen(3000, function() {
+	console.log('Listening on port %s...', server.address().port);
+});
