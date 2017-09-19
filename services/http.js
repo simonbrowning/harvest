@@ -21,7 +21,7 @@ app.post('/api/client', function(req, res) {
 	}
 
 	args.push(JSON.stringify(update));
-	console.log(args);
+
 	const sub = execFile('node', args, {
 		detached: true,
 		stdio: 'ignore'
