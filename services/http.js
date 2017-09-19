@@ -9,13 +9,19 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post('/api/client', function(req, res) {
-	//TODO: validate request, account etc..
 	let args = [`${__dirname}/client.js`];
 
-	_.each(req.body, function(value, key) {
-		args.push(`${key}='${value}'`);
-	});
+	let update = req.body;
+	//If no hours have been set set to 0
+	if (!update.client_hours) {
+		update.client_hours = '0';
+	}
+	if (!update.client_bucket) {
+		update.client_hours = '0';
+	}
 
+	args.push(JSON.stringify(update));
+	console.log(args);
 	const sub = execFile('node', args, {
 		detached: true,
 		stdio: 'ignore'
@@ -24,5 +30,5 @@ app.post('/api/client', function(req, res) {
 });
 
 const server = app.listen(3000, function() {
-	console.log('Listening on port %s...', server.address().port);
+	console.log(`Listening on port ${server.address().port}`);
 });

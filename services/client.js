@@ -9,14 +9,11 @@ const sendRequest = require('../actions/sendRequest.js'),
 	createProject = require('../utils/createProject.js');
 
 (async function(args) {
-	let client_object = {};
+	if (args.length !== 3) {
+		process.exit(1);
+	}
 
-	args.forEach(function(val, index, array) {
-		let arg = val.split('=');
-		if (arg.length) {
-			client_object[arg[0]] = arg[1];
-		}
-	});
+	let client_object = JSON.parse(args[2]);
 
 	console.log('getting clients');
 	const clients = await sendRequest('GET', { path: '/clients' });
@@ -34,6 +31,7 @@ const sendRequest = require('../actions/sendRequest.js'),
 		);
 		if (has_service_project) {
 			console.log('has services project');
+			//TODO: check that the service hours are upto date if not update project
 		} else {
 			console.log('no project found');
 			//TODO: module for creating services project
@@ -79,11 +77,16 @@ const sendRequest = require('../actions/sendRequest.js'),
 			client_id: existing_client.id
 		});
 
+		//TODO: Assin AM, DM, DE (unless parnter) to new projects
+		//TODO: Add tasks based on client_object.type
+		//TODO: slack engineers to let them know that project have been added
+
 		console.log(
 			`new deployment_project "${client_object.deployment_project}" for ${existing_client.name}, ID: ${deployment_project}`
 		);
 	}
 	console.log('exiting');
+	process.exit(0);
 })(process.argv);
 
 // //copy support project template to new client
