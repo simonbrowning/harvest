@@ -4,9 +4,14 @@ const _ = require('underscore'),
 	config = require('../config');
 
 const sendRequest = require('../actions/sendRequest.js'),
+	createServiceProject = require('../actions/createServiceProject.js'),
 	findClient = require('../utils/findClient.js'),
 	findProject = require('../utils/findProject.js'),
-	createProject = require('../utils/createProject.js');
+	createProject = require('../utils/createProject.js'),
+	getProjectHours = require('../utils/getProjectHours.js');
+
+
+
 
 (async function(args) {
 	if (args.length !== 3) {
@@ -30,12 +35,34 @@ const sendRequest = require('../actions/sendRequest.js'),
 			config.harvest.service_project
 		);
 		if (has_service_project) {
+
 			console.log('has services project');
-			//TODO: check that the service hours are upto date if not update project
+			let update_notes = false;
+			let hours = getProjectHours(has_service_project);
+			if(hours.monthly_hours != parseInt(client_object.client_hours)){
+				hours.monthly_hours = parseInt(client_object.client_hours);
+				update_notes = true;
+			}
+			if(hours.client_bucket != parseInt(client_object.client_bucket)){
+			 hours.client_bucket = parseInt(client_object.client_bucket);
+			 update_notes = true;
+		 }
+		 if(update_notes){
+			 await sendRequest('PUT',{'path': `/projects/${has_service_project.id}`,
+			 body{
+				 'project':{
+					 client_id: has_service_project,
+					 notes: `client_hours:${hours.monthly_hours};client_bucket:${hours.client_bucket}`
+				 }
+			 }});
+		 }
+
 		} else {
 			console.log('no project found');
-			//TODO: module for creating services project
+			//TODO: module for cloning services project
 			console.log('creating...');
+
+			await createServiceProject(existing_client.id,client_object.client_hours,client_object.client_bucket);
 			let services_project_id = await createProject({
 				name: config.harvest.service_project,
 				active: true,
