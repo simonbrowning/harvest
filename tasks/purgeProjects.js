@@ -1,17 +1,11 @@
-var r = require('request'),
-	throttledRequest = require('throttled-request')(r),
-	config = require('../config'),
+var config = require('../config'),
 	sendRequest = require('../actions/sendRequest');
-
-// throttledRequest.on('request', function () {
-//   console.log('Making a request. Elapsed time: %d ms', Date.now() - startedAt);
-// });
 
 function callback(body) {
 	console.log('Got projects now loop');
 	//var projects = JSON.parse(body);
-	body.forEach(function(Obj) {
-		let PID = Obj.project.id;
+	body.forEach(function({ project }) {
+		let PID = project.id;
 		if (PID != config.harvest.default_project) {
 			console.log(`${PID} to be deleted.`);
 			sendRequest('DELETE', { path: `/projects/${PID}/` })
