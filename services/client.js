@@ -52,7 +52,10 @@ function errorHandle(e) {
 				hours.monthly_hours = parseInt(client_object.client_hours);
 				update_notes = true;
 			}
-			if (hours.client_bucket != parseInt(client_object.client_bucket)) {
+			if (
+				client_object.client_bucket &&
+				hours.client_bucket != parseInt(client_object.client_bucket)
+			) {
 				hours.client_bucket = parseInt(client_object.client_bucket);
 				update_notes = true;
 			}
@@ -61,7 +64,7 @@ function errorHandle(e) {
 					path: `/projects/${has_service_project.id}`,
 					body: {
 						project: {
-							client_id: has_service_project,
+							client_id: has_service_project.client_id,
 							notes: `client_hours:${hours.monthly_hours};client_bucket:${hours.client_bucket}`
 						}
 					}
@@ -90,7 +93,7 @@ function errorHandle(e) {
 			new_project.active = true;
 			new_project.notes = `client_hours:${client_object.client_hours ||
 				0};client_bucket:${client_object.client_bucket || 0}`;
-			await createServiceProject(new_project, services_project);
+			//await createServiceProject(new_project, services_project);
 		}
 	} else {
 		console.log('create client');
