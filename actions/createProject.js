@@ -1,9 +1,9 @@
 const createProject = require('../utils/createProject'),
-  getUsers = require('../utils/getUsers.js'),
-  getTasks = require('../utils/getUsers.js'),
-  proccessTasks = require('../utils/proccessTasks.js'),
-  proccessUsers = require('../utils/proccessUsers.js'),
-  toggleProject = require('../utils/toggleProject.js'),
+	getUsers = require('../utils/getUsers.js'),
+	getTasks = require('../utils/getTasks.js'),
+	processTasks = require('../utils/processTasks.js'),
+	processUsers = require('../utils/processUsers.js'),
+	toggleProject = require('../utils/toggleProject.js');
 //END dependies
 
 module.exports = function(new_project, old_project) {
@@ -12,10 +12,10 @@ module.exports = function(new_project, old_project) {
 			.then(getUsers)
 			.then(processUsers)
 			.then(getTasks)
-			.then(proccessTasks)
+			.then(processTasks)
 			.then(toggleProject)
 			.then(function() {
-        console.log(`finished rollover for services project ${old_project.id}`);
+				console.log(`finished rollover for services project ${old_project.id}`);
 				resolve();
 			})
 			.catch(function(err) {

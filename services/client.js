@@ -1,13 +1,14 @@
 process.env.NODE_ENV = 'development';
 
 const _ = require('underscore'),
-	config = require('../config');
+	config = require('../config'),
+	moment = require('moment');
 
 const sendRequest = require('../actions/sendRequest.js'),
 	createServiceProject = require('../actions/createServiceProject.js'),
 	findClient = require('../utils/findClient.js'),
 	findProject = require('../utils/findProject.js'),
-	createProject = require('../utils/createProject.js'),
+	createProject = require('../actions/createProject.js'),
 	getProjectHours = require('../utils/getProjectHours.js'),
 	cloneProject = require('../utils/cloneProject.js');
 
@@ -44,6 +45,7 @@ function errorHandle(e) {
 			config.harvest.service_project
 		);
 		if (has_service_project) {
+			has_service_project = has_service_project.project;
 			console.log('has services project');
 			let update_notes = false;
 			let hours = getProjectHours(has_service_project);
@@ -69,17 +71,27 @@ function errorHandle(e) {
 		} else {
 			console.log('no service project found');
 
-			console.log('creating porject object');
-			let new_project = cloneProject(
-				findProject(
-					projects,
-					(findClient('[TEMPLATES]'), config.harvest.service_project)
-				),
-				{}
-			);
+			console.log('creating project object');
+			let new_project = {},
+				services_project;
+
+			services_project = findProject(
+				projects,
+				findClient('[TEMPLATES]', clients).client.id,
+				'Services '
+			).project;
+			cloneProject(services_project, new_project);
+
 			//TODO: set up rest of new project.
 
-			console.log(`new project id ${services_project_id}`);
+			new_project.name =
+				services_project.name.match(/(.+)\d{4}\-\d{2}$/)[1] +
+				moment().format('YYYY-MM');
+			new_project.client_id = existing_client.id;
+			new_project.active = true;
+			new_project.notes = `client_hours:${client_object.client_hours ||
+				0};client_bucket:${client_object.client_bucket || 0}`;
+			await createProject(new_project, services_project);
 		}
 	} else {
 		console.log('create client');
@@ -89,7 +101,7 @@ function errorHandle(e) {
 		}).catch(errorHandle);
 
 		existing_client = await sendRequest('GET', {
-			path: `/client/${new_client}`
+			path: `/clients/${new_client}`
 		}).catch(errorHandle);
 	}
 
@@ -108,19 +120,19 @@ function errorHandle(e) {
 			`${existing_client.name} create project called: "${client_object.deployment_project}"`
 		);
 
-		deployment_project = await createProject({
-			name: client_object.deployment_project,
-			active: true,
-			client_id: existing_client.id
-		}).catch(errorHandle);
+		// deployment_project = await createProject({
+		// 	name: client_object.deployment_project,
+		// 	active: true,
+		// 	client_id: existing_client.id
+		// }).catch(errorHandle);
 
 		//TODO: Assin AM, DM, DE (unless parnter) to new projects
 		//TODO: Add tasks based on client_object.type
 		//TODO: slack engineers to let them know that project have been added
 
-		console.log(
-			`new deployment_project "${client_object.deployment_project}" for ${existing_client.name}, ID: ${deployment_project}`
-		);
+		// console.log(
+		// 	`new deployment_project "${client_object.deployment_project}" for ${existing_client.name}, ID: ${deployment_project}`
+		// );
 	}
 	console.log('exiting');
 	process.exit(0);

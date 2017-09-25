@@ -12,7 +12,7 @@ module.exports = function(pid, uid) {
 			}
 		})
 			.then(function() {
-				console.log('User set to PM: ' + id);
+				console.log('User set to PM: ' + uid);
 				resolve();
 			})
 			.catch(function(err) {

@@ -45,7 +45,7 @@ const sendRequest = function(method, options) {
 				.on('response', function(resp) {
 					response = resp;
 					if (/201|203/.test(response.statusCode)) {
-						cb('success', response); //return resolve(response);
+						cb('success', response.headers.location.match(/\d+$/)[0]); //return resolve(response);
 					} else if (/5\d{2}/.test(response.statusCode)) {
 						if (config.retry.maxRetryies > retry) {
 							console.log('500 error, retrying');

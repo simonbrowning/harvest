@@ -8,13 +8,13 @@ module.exports = function(data) {
 			new_project = await sendRequest('POST', {
 				path: '/projects',
 				body: {
-					project: project
+					project: data.new_project
 				}
 			});
 		} catch (e) {
 			reject('failed to create project');
 		}
-		data.new_pid = new_project.headers.location.match(/\d+/)[0];
+		data.new_pid = new_project;
 		resolve(data);
 	});
 };

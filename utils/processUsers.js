@@ -6,17 +6,18 @@ module.exports = function processUsers(data) {
 		let promises = data.users.map(function({ user_assignment }) {
 			return new Promise(function(resolve, reject) {
 				addUser(data.new_pid, user_assignment.user_id)
-					.then(function() {
+					.then(function(uid) {
 						console.log(
-							`'User ${user_assignment.user_id} added to ${data.new_pid}`
+							`User ${user_assignment.user_id} added to ${data.new_pid}`
 						);
+
 						console.log(`checking to see if ${user_assignment.user_id} is PM`);
 						if (!user_assignment.is_project_manager) {
 							console.log(`${user_assignment.user_id} is not a PM`);
 							resolve();
 						} else {
 							console.log(`${user_assignment.user_id} is PM updating...`);
-							setPM(data.new_pid, user_assignment.user_id)
+							setPM(data.new_pid, uid)
 								.then(function() {
 									return resolve();
 								})

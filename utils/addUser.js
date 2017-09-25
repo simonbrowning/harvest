@@ -16,6 +16,6 @@ module.exports = function(pid, user) {
 		} catch (e) {
 			reject('failed to add user');
 		}
-		resolve(new_user.headers.location.match(/\d+$/)[0]);
+		resolve(new_user);
 	});
 };

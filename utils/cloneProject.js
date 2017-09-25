@@ -4,8 +4,8 @@ const { each, has } = require('underscore'),
 
 module.exports = function(old_project, new_project) {
 	//Clone project
-	_.each(old_project, function(value, key, list) {
-		if (_.has(list, key) && !exclude_fields.includes(key)) {
+	each(old_project, function(value, key, list) {
+		if (has(list, key) && !exclude_fields.includes(key)) {
 			new_project[key] = value;
 		}
 	});

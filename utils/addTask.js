@@ -6,17 +6,17 @@ module.exports = function(pid, task) {
 		console.log(`create new task for ${pid}`);
 		try {
 			new_task = await sendRequest('POST', {
-				path: '/projects/' + pid + '/task_assignments',
+				path: `/projects/${pid}/task_assignments`,
 				body: {
 					task: {
-						id: task_assignment.task_id
+						id: task
 					}
 				}
 			});
 		} catch (e) {
 			reject('failed to create task');
 		}
-		let tid = new_task.headers.location.match(/\d+$/)[0];
+		let tid = new_task;
 		resolve(tid);
 	});
 }; //addTask
