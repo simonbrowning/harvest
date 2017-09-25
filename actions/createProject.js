@@ -15,7 +15,9 @@ module.exports = function(new_project, old_project) {
 			.then(processTasks)
 			.then(toggleProject)
 			.then(function() {
-				console.log(`finished rollover for services project ${old_project.id}`);
+				console.log(
+					`finished creating project ${old_project.id} for ${old_project.client_id}`
+				);
 				resolve();
 			})
 			.catch(function(err) {
