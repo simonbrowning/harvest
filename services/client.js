@@ -8,7 +8,6 @@ const sendRequest = require('../actions/sendRequest.js'),
 	createServiceProject = require('../actions/createServiceProject.js'),
 	findClient = require('../utils/findClient.js'),
 	findProject = require('../utils/findProject.js'),
-	createProject = require('../actions/createProject.js'),
 	getProjectHours = require('../utils/getProjectHours.js'),
 	cloneProject = require('../utils/cloneProject.js');
 
@@ -91,7 +90,7 @@ function errorHandle(e) {
 			new_project.active = true;
 			new_project.notes = `client_hours:${client_object.client_hours ||
 				0};client_bucket:${client_object.client_bucket || 0}`;
-			await createProject(new_project, services_project);
+			await createServiceProject(new_project, services_project);
 		}
 	} else {
 		console.log('create client');
