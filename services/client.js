@@ -8,7 +8,8 @@ const sendRequest = require('../actions/sendRequest.js'),
 	findClient = require('../utils/findClient.js'),
 	findProject = require('../utils/findProject.js'),
 	createProject = require('../utils/createProject.js'),
-	getProjectHours = require('../utils/getProjectHours.js');
+	getProjectHours = require('../utils/getProjectHours.js'),
+	cloneProject = require('../utils/cloneProject.js');
 
 function errorHandle(e) {
 	console.log('caught rejection');
@@ -24,7 +25,6 @@ function errorHandle(e) {
 	}
 
 	let client_object = JSON.parse(args[2]);
-	console.log(client_object);
 	console.log('getting clients');
 	const clients = await sendRequest('GET', { path: '/clients' }).catch(
 		errorHandle
@@ -67,20 +67,17 @@ function errorHandle(e) {
 				}).catch(errorHandle);
 			}
 		} else {
-			console.log('no project found');
-			//TODO: module for cloning services project
-			console.log('creating...');
+			console.log('no service project found');
 
-			await createServiceProject(
-				existing_client.id,
-				client_object.client_hours,
-				client_object.client_bucket
+			console.log('creating porject object');
+			let new_project = cloneProject(
+				findProject(
+					projects,
+					(findClient('[TEMPLATES]'), config.harvest.service_project)
+				),
+				{}
 			);
-			let services_project_id = await createProject({
-				name: config.harvest.service_project,
-				active: true,
-				client_id: existing_client.id
-			}).catch(errorHandle);
+			//TODO: set up rest of new project.
 
 			console.log(`new project id ${services_project_id}`);
 		}
@@ -128,26 +125,3 @@ function errorHandle(e) {
 	console.log('exiting');
 	process.exit(0);
 })(process.argv);
-
-// //copy support project template to new client
-// function copyServicesProject(clientId) {
-// 	return new Promise(function(resolve, reject) {
-// 		let updated_services_project = Object.assign({}, service_project.project);
-// 		updated_services_project.client_id = clientId;
-// 		const new_project = {};
-// 		new_project.name =
-// 			updated_services_project.name.match(/(.+)\d{4}\-\d{2}$/)[1] +
-// 			moment().format('YYYY-MM');
-// 		new_project.active = true;
-// 		exists = checkForNewProject(projects, clientId, new_project.name);
-// 		if (exists) {
-// 			console.log(clientId + ': Already has support project');
-// 			resolve();
-// 		} else {
-// 			createProject(new_project, updated_services_project)
-// 				.then(resolve)
-// 				.catch(reject);
-// 		}
-// 	});
-// } //copyServicesProject
-//

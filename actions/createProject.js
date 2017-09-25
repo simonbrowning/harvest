@@ -1,10 +1,9 @@
-const _ = require('underscore'),
-	moment = require('moment'),
-	SimpleNodeLogger = require('simple-node-logger'),
-	config = require('../config');
-
-(sendRequest = require('../actions/sendRequest')),
-	(createProject = require('../utils/createProject'));
+const createProject = require('../utils/createProject'),
+  getUsers = require('../utils/getUsers.js'),
+  getTasks = require('../utils/getUsers.js'),
+  proccessTasks = require('../utils/proccessTasks.js'),
+  proccessUsers = require('../utils/proccessUsers.js'),
+  toggleProject = require('../utils/toggleProject.js'),
 //END dependies
 
 module.exports = function(new_project, old_project) {
@@ -14,12 +13,13 @@ module.exports = function(new_project, old_project) {
 			.then(processUsers)
 			.then(getTasks)
 			.then(proccessTasks)
-			.then(toggleOldProject)
+			.then(toggleProject)
 			.then(function() {
+        console.log(`finished rollover for services project ${old_project.id}`);
 				resolve();
 			})
 			.catch(function(err) {
-				log.warn(`Something bad happend, ${err}`);
+				console.error(`Something bad happend, ${err}`);
 				reject();
 			});
 	});
