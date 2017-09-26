@@ -8,8 +8,16 @@ const sendRequest = require('../actions/sendRequest.js'),
 	createServiceProject = require('../actions/createServiceProject.js'),
 	findClient = require('../utils/findClient.js'),
 	findProject = require('../utils/findProject.js'),
+	findUser = require('../utils/findUser.js'),
+	findTasks = require('../utils/findTask.js'),
 	getProjectHours = require('../utils/getProjectHours.js'),
-	cloneProject = require('../utils/cloneProject.js');
+	cloneProject = require('../utils/cloneProject.js'),
+	createProject = require('../utils/createProject.js'),
+	getTasks = require('../utils/getTasks'),
+	addUser = require('../utils/addUser.js'),
+	addTask = require('../utils/addTask.js'),
+	setPM = require('../utils/setPM.js'),
+	processTasks = require('../utils/processTasks.js');
 
 function errorHandle(e) {
 	console.log('caught rejection');
@@ -93,7 +101,11 @@ function errorHandle(e) {
 			new_project.active = true;
 			new_project.notes = `client_hours:${client_object.client_hours ||
 				0};client_bucket:${client_object.client_bucket || 0}`;
-			//await createServiceProject(new_project, services_project);
+			new_project.estimate =
+				parseInt(client_object.client_hours || '0') +
+				parseInt(client_object.client_bucket || '0');
+			new_project.budget = new_project.estimate;
+			await createServiceProject(new_project, services_project);
 		}
 	} else {
 		console.log('create client');
@@ -107,34 +119,84 @@ function errorHandle(e) {
 		}).catch(errorHandle);
 	}
 
-	let deployment_project = findProject(
-		projects,
-		existing_client.id,
-		client_object.deployment_project
-	);
-
-	if (deployment_project) {
-		console.log(
-			`deployment_project "${client_object.deployment_project}" already exists for ${existing_client.name}`
-		);
+	if (!client_object.deployment_project) {
+		console.log('no deployment project sent');
 	} else {
-		console.log(
-			`${existing_client.name} create project called: "${client_object.deployment_project}"`
+		let deployment_project = findProject(
+			projects,
+			existing_client.id,
+			client_object.deployment_project
 		);
 
-		// deployment_project = await createProject({
-		// 	name: client_object.deployment_project,
-		// 	active: true,
-		// 	client_id: existing_client.id
-		// }).catch(errorHandle);
+		if (deployment_project) {
+			console.log(
+				`deployment_project "${client_object.deployment_project}" already exists for ${existing_client.name}`
+			);
+		} else {
+			console.log(
+				`${existing_client.name} create project called: "${client_object.deployment_project}"`
+			);
 
-		//TODO: Assin AM, DM, DE (unless parnter) to new projects
-		//TODO: Add tasks based on client_object.type
-		//TODO: slack engineers to let them know that project have been added
+			let data = await createProject({
+				new_project: {
+					name: client_object.deployment_project,
+					active: true,
+					client_id: existing_client.id
+				}
+			}).catch(errorHandle);
 
-		// console.log(
-		// 	`new deployment_project "${client_object.deployment_project}" for ${existing_client.name}, ID: ${deployment_project}`
-		// );
+			console.log(`created ${data.new_pid}`);
+
+			console.log('getting team');
+			const people = await sendRequest('GET', { path: '/people' }).catch(
+				errorHandle
+			);
+			if (!people) {
+				console.error(`couldn't get team/people/users`);
+			}
+
+			//NB: not tested as need to add other users
+			//Account Manager
+			//console.log('setting AM');
+			// let am = {};
+			// am.user = findUser(people, client_object.account_manager).user;
+			// am.uid = await addUser(data.new_pid, am.id).catch(errorHandle);
+			// await setPM(data.new_pid, am.uid).catch(errorHandle);
+			//
+			// //Deployment Manager
+			//console.log('setting DM');
+			// let dm = {};
+			// dm.user = findUser(people, client_object.deployment_manager).user;
+			// dm.uid = await addUser(data.new_pid, dm.id).catch(errorHandle);
+			// await setPM(data.new_pid, dm.uid).catch(errorHandle);
+			//
+			// //Deployment Enigneer
+			// if (client_object.deployment_engineer !== 'Partner/Agency') {
+			//console.log('setting DE');
+			// 	let de = {};
+			// 	de.user = findUser(people, client_object.deployment_engineer).user;
+			// 	de.uid = await addUser(data.new_pid, de.id).catch(errorHandle);
+			// }
+
+			if (client_object.type) {
+				let tasks = await sendRequest('GET', { path: '/tasks' });
+				if (tasks) {
+					let filteredTasks;
+					if (client_object.type === 'AudienceStream') {
+						filteredTasks = findTasks(tasks, 'AS');
+					} else {
+						console.log('assume iQ');
+						filteredTasks = findTasks(tasks, 'iQ');
+					}
+					await processTasks({ tasks: filteredTasks, new_pid: data.new_pid });
+				}
+			}
+			//TODO: slack engineers to let them know that project have been added
+
+			// console.log(
+			// 	`new deployment_project "${client_object.deployment_project}" for ${existing_client.name}, ID: ${deployment_project}`
+			// );
+		}
 	}
 	console.log('exiting');
 	process.exit(0);

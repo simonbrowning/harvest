@@ -10,7 +10,7 @@
 		"http": "NODE_ENV=dev node services/http.js",
 		"addUser": "NODE_ENV=production node tasks/addUser.js",
 		"client":
-			"NODE_ENV=dev node --inspect-brk services/client.js '{\"account\":\"Test\",\"account_manager\":\"Trevor Silverthorne\",\"client_hours\":\"3\",\"deployment_engineer\":\"Partner/Agency\",\"deployment_project\":\"Alcon.com\",\"deployment_manager\":\"Trevor Silverthorne\"}'"
+			"NODE_ENV=dev node --inspect-brk services/client.js '{\"account\":\"Test\",\"account_manager\":\"Trevor Silverthorne\",\"client_hours\":\"3\",\"deployment_engineer\":\"Partner/Agency\",\"deployment_project\":\"Alcon.com\",\"deployment_manager\":\"Trevor Silverthorne\",\"type\":\"Web\"}'"
 	},
 	"keywords": ["Harvest", "nodeJS"],
 	"author": "Simon Browning",

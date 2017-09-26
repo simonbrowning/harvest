@@ -2,20 +2,18 @@ const addTask = require('../utils/addTask');
 
 module.exports = function proccessTasks(data) {
 	return new Promise(function(resolve, reject) {
-		let promises = data.tasks.map(function({ task_assignment }) {
+		let promises = data.tasks.map(function(obj) {
 			return new Promise(function(resolve, reject) {
-				console.log('Process task: ', task_assignment.task_id);
-				addTask(data.new_pid, task_assignment.task_id)
+				let task = obj.task_assignment || obj.task;
+				let tid = task.task_id || task.id;
+				console.log('Process task: ', tid);
+				addTask(data.new_pid, tid)
 					.then(function() {
-						console.log(
-							`Task ${task_assignment.task_id} added to ${data.new_pid}`
-						);
+						console.log(`Task ${tid} added to ${data.new_pid}`);
 						resolve();
 					})
 					.catch(function() {
-						console.error(
-							`failed to add ${task_assignment.task_id} to ${data.new_pid}`
-						);
+						console.error(`failed to add ${tid} to ${data.new_pid}`);
 						resolve();
 					});
 			});

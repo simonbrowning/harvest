@@ -1,7 +1,9 @@
 const { find } = require('underscore');
 
-module.exports = function(users, email) {
+module.exports = function(users, name) {
 	return find(users, function({ user }) {
-		return user.email.toLowerCase() === email.toLowerCase();
+		return user.email
+			.toLowerCase()
+			.indexOf(name.toLowerCase().replace(' ', '.') > 0);
 	});
 }; //checkForNewProject
