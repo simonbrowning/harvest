@@ -92,8 +92,6 @@ function errorHandle(e) {
 			).project;
 			cloneProject(services_project, new_project);
 
-			//TODO: set up rest of new project.
-
 			new_project.name =
 				services_project.name.match(/(.+)\d{4}\-\d{2}$/)[1] +
 				moment().format('YYYY-MM');
