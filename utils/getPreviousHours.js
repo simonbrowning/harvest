@@ -1,5 +1,7 @@
 const moment = require('moment'),
-	sendRequest = require('../actions/sendRequest.js');
+	_ = require('underscore'),
+	sendRequest = require('../actions/sendRequest.js'),
+	isBillable = require('../utils/isBillable.js');
 
 module.exports = function(pid, start, end) {
 	return new Promise(async function(resolve, reject) {
@@ -11,7 +13,6 @@ module.exports = function(pid, start, end) {
 				.subtract(end, 'month')
 				.endOf('month')
 				.format('YYYYMMDD');
-
 		let report,
 			tasks,
 			hours_used = 0;
@@ -24,18 +25,15 @@ module.exports = function(pid, start, end) {
 		}
 
 		try {
-			tasks = sendRequest('GET', {
+			tasks = await sendRequest('GET', {
 				path: `/projects/${pid}/task_assignments`
 			});
 		} catch (e) {
 			reject(`failed to get tasks for ${pid}`);
 		}
-
-		let hours_used = 0;
-		_.each(report, function(entry) {
-			let day = entry.day_entry;
-			if (isBillableTask(day.task_id, tasks)) {
-				hours_used += day.hours;
+		_.each(report, function({ day_entry }) {
+			if (isBillable(day_entry.task_id, tasks)) {
+				hours_used += day_entry.hours;
 			}
 		});
 		return resolve(hours_used);
