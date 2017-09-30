@@ -55,9 +55,14 @@ function errorHandle(e) {
 			has_service_project = has_service_project.project;
 			console.log('has services project');
 			let update_notes = false;
+			let project = {};
 			let hours = getProjectHours(has_service_project);
+
+			//TODO:work out updating remaining hours
 			if (hours.monthly_hours != parseInt(client_object.client_hours)) {
 				hours.monthly_hours = parseInt(client_object.client_hours);
+				project.estimate = hours.monthly_hours + client_object.client_bucket;
+				project.budget = project.estimate;
 				update_notes = true;
 			}
 			if (
@@ -68,15 +73,14 @@ function errorHandle(e) {
 				update_notes = true;
 			}
 			if (update_notes) {
-				await sendRequest('PUT', {
-					path: `/projects/${has_service_project.id}`,
-					body: {
-						project: {
-							client_id: has_service_project.client_id,
-							notes: `client_hours:${hours.monthly_hours};client_bucket:${hours.client_bucket}`
+				(project.client_id = has_service_project.client_id),
+					(project.notes = `client_hours:${hours.monthly_hours};client_bucket:${hours.client_bucket}`),
+					await sendRequest('PUT', {
+						path: `/projects/${has_service_project.id}`,
+						body: {
+							project: project
 						}
-					}
-				}).catch(errorHandle);
+					}).catch(errorHandle);
 			}
 		} else {
 			console.log('no service project found');
@@ -155,26 +159,56 @@ function errorHandle(e) {
 
 			//NB: not tested as need to add other users
 			//Account Manager
-			//console.log('setting AM');
-			// let am = {};
-			// am.user = findUser(people, client_object.account_manager).user;
-			// am.uid = await addUser(data.new_pid, am.id).catch(errorHandle);
-			// await setPM(data.new_pid, am.uid).catch(errorHandle);
-			//
+			console.log('setting AM');
+			let am = {};
+			console.log(`Finding AM: ${client_object.account_manager}`);
+			try {
+				am.user = findUser(people, client_object.account_manager).user;
+				console.log(
+					`Found ${client_object.account_manager}, adding to ${data.new_pid}`
+				);
+				am.uid = await addUser(data.new_pid, am.user.id).catch(errorHandle);
+				await setPM(data.new_pid, am.user.uid).catch(errorHandle);
+			} catch (e) {
+				console.log(
+					`Can't find ${client_object.account_manager}, are they a valid user?`
+				);
+			}
+
+			//TODO: try/catch for finding users
 			// //Deployment Manager
-			//console.log('setting DM');
-			// let dm = {};
-			// dm.user = findUser(people, client_object.deployment_manager).user;
-			// dm.uid = await addUser(data.new_pid, dm.id).catch(errorHandle);
-			// await setPM(data.new_pid, dm.uid).catch(errorHandle);
-			//
+			console.log('setting DM');
+			let dm = {};
+			if (client_object.account_manager !== client_object.deployment_manager) {
+				try {
+					console.log(`Finding DM: ${client_object.deployment_manager}`);
+					dm.user = findUser(people, client_object.deployment_manager).user;
+					console.log(`Found: ${client_object.deployment_manager}`);
+					dm.uid = await addUser(data.new_pid, dm.id).catch(errorHandle);
+					await setPM(data.new_pid, dm.uid).catch(errorHandle);
+				} catch (e) {
+					console.log(
+						`Can't find ${client_object.deployment_manager}, are they a valid user?`
+					);
+				}
+			}
+
 			// //Deployment Enigneer
-			// if (client_object.deployment_engineer !== 'Partner/Agency') {
-			//console.log('setting DE');
-			// 	let de = {};
-			// 	de.user = findUser(people, client_object.deployment_engineer).user;
-			// 	de.uid = await addUser(data.new_pid, de.id).catch(errorHandle);
-			// }
+			if (client_object.deployment_engineer !== 'Partner/Agency') {
+				console.log('setting DE');
+				let de = {};
+				try {
+					console.log(`Finding DM: ${client_object.deployment_engineer}`);
+					de.user = findUser(people, client_object.deployment_engineer).user;
+					de.uid = await addUser(data.new_pid, de.id).catch(errorHandle);
+				} catch (e) {
+					console.log(
+						`Can't find ${client_object.deployment_engineer}, are they a valid user?`
+					);
+				}
+			} else {
+				console.log(`Partner/Agency ignoring DE`);
+			}
 
 			if (client_object.type) {
 				let tasks = await sendRequest('GET', { path: '/tasks' });

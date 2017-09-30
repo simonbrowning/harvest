@@ -13,13 +13,14 @@ app.post('/api/client', function(req, res) {
 
 	let update = req.body;
 	//If no hours have been set set to 0
-	if (!update.client_hours) {
+	if (update.client_hours == undefined) {
 		update.client_hours = '0';
 	}
-	if (!update.client_bucket) {
-		update.client_hours = '0';
+	if (update.client_bucket == undefined) {
+		update.client_bucket = '0';
 	}
 
+	console.log(JSON.stringify(update));
 	args.push(JSON.stringify(update));
 
 	const sub = execFile('node', args, {
