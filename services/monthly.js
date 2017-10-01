@@ -6,7 +6,7 @@ const createServiceProject = require('../actions/createServiceProject.js'),
 	moment = require('moment'),
 	findProject = require('../utils/findProject');
 
-const last_month = '2017-08';
+const last_month = '2017-09';
 function processProjects(projects) {
 	console.log('Projects in response: ' + projects.length);
 	return new Promise(function(resolve, reject) {
@@ -34,7 +34,7 @@ function processProjects(projects) {
 						console.log('New project already exists');
 						resolve();
 					} else {
-						getPreviousHours(project.id).then(function(hours_used) {
+						getPreviousHours(project.id, 1, 1).then(function(hours_used) {
 							let hours = getProjectHours(project);
 
 							let excess_hours,
@@ -52,9 +52,13 @@ function processProjects(projects) {
 							} else {
 								remaining_bucket = remaining_bucket || hours.client_bucket;
 							}
-							new_project.estimate = remaining_bucket + hours.monthly_hours;
+							new_project.estimate = parseInt(
+								remaining_bucket + hours.monthly_hours
+							);
 							new_project.budget = new_project.estimate;
 							new_project.notes = `client_hours:${hours.monthly_hours};client_bucket:${hours.client_bucket};remaining_bucket:${remaining_bucket}`;
+							new_project.budget_by = 'project';
+							new_project.billable = true;
 
 							createServiceProject(new_project, project)
 								.then(resolve)

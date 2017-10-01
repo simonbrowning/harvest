@@ -61,7 +61,8 @@ function errorHandle(e) {
 			//TODO:work out updating remaining hours
 			if (hours.monthly_hours != parseInt(client_object.client_hours)) {
 				hours.monthly_hours = parseInt(client_object.client_hours);
-				project.estimate = hours.monthly_hours + client_object.client_bucket;
+				project.estimate =
+					hours.monthly_hours + parseInt(client_object.client_bucket);
 				project.budget = project.estimate;
 				update_notes = true;
 			}
@@ -107,6 +108,8 @@ function errorHandle(e) {
 				parseInt(client_object.client_hours || '0') +
 				parseInt(client_object.client_bucket || '0');
 			new_project.budget = new_project.estimate;
+			new_project.budget_by = 'project';
+			new_project.billable = true;
 			await createServiceProject(new_project, services_project);
 		}
 	} else {
