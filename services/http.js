@@ -1,3 +1,5 @@
+//TODO: Swap out for fastly https://www.npmjs.com/package/fastify
+
 const express = require('express'),
 	bodyParser = require('body-parser'),
 	_ = require('underscore'),

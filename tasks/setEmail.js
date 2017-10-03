@@ -16,14 +16,28 @@ function callback(body) {
 			project.id != config.harvest.default_project &&
 			/2017-10$/.test(project.name)
 		) {
-			console.log(`${PID} to be get.`);
-			sendRequest('GET', { path: `/projects/${PID}/` })
-				.then(function({ project }) {
-					console.log(`${PID} - ${project.id}`);
+			console.log(`checking ${PID}`);
+			if (project.notify_when_over_budget) {
+				console.log(`${PID} has emails configured`);
+			} else {
+				console.log(`${PID} currently set to no emails... updating `);
+				sendRequest('PUT', {
+					path: `/projects/${PID}`,
+					body: {
+						project: {
+							client_id: project.client_id,
+							notify_when_over_budget: true
+						}
+					}
 				})
-				.catch(function(reason) {
-					console.log(`${PID} failed, ${reason}`);
-				});
+					.then(function({ project }) {
+						console.log(`${PID} updated`);
+					})
+					.catch(function(reason) {
+						console.error(`${PID} failed - ${reason}`);
+						process.exit(1);
+					});
+			}
 		}
 	});
 }
