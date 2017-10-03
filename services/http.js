@@ -1,16 +1,8 @@
-//TODO: Swap out for fastly https://www.npmjs.com/package/fastify
-
-const express = require('express'),
-	bodyParser = require('body-parser'),
+const fastify = require('fastify')(),
 	_ = require('underscore'),
 	{ execFile } = require('child_process');
 
-const app = express();
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-app.post('/api/client', function(req, res) {
+fastify.post('/api/client', function(req, res) {
 	let args = [`${__dirname}/client.js`];
 
 	let update = req.body;
@@ -29,9 +21,13 @@ app.post('/api/client', function(req, res) {
 		detached: true,
 		stdio: 'ignore'
 	});
-	return res.send('');
+	return res.send('ok');
 });
 
-const server = app.listen(3000, function() {
-	console.log(`Listening on port ${server.address().port}`);
+fastify.listen(3000, function(err) {
+	if (err) throw err;
+	console.log(`server listening on ${fastify.server.address().port}`);
 });
+// const server = fastify.listen(3000, function() {
+// 	console.log(`Listening on port ${server.address().port}`);
+// });
