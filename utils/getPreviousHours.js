@@ -1,7 +1,8 @@
 const moment = require('moment'),
 	_ = require('underscore'),
 	sendRequest = require('../actions/sendRequest.js'),
-	isBillable = require('../utils/isBillable.js');
+	isBillable = require('../utils/isBillable.js'),
+	log = require('../actions/logging.js');
 
 module.exports = function(pid, start, end) {
 	return new Promise(async function(resolve, reject) {
@@ -17,6 +18,7 @@ module.exports = function(pid, start, end) {
 			tasks,
 			hours_used = 0;
 		try {
+			log.info(`${pid} get time report`);
 			report = await sendRequest('GET', {
 				path: `/projects/${pid}/entries?from=${start_date}&to=${end_date}`
 			});
@@ -25,6 +27,7 @@ module.exports = function(pid, start, end) {
 		}
 
 		try {
+			log.info(`${pid} get tasks for entries`);
 			tasks = await sendRequest('GET', {
 				path: `/projects/${pid}/task_assignments`
 			});

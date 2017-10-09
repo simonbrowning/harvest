@@ -1,7 +1,9 @@
 const fastify = require('fastify')(),
 	_ = require('underscore'),
-	{ execFile } = require('child_process');
+	{ execFile } = require('child_process'),
+	log = require('../actions/logging.js');
 
+process.env.log = 'http';
 fastify.post('/api/client', function(req, res) {
 	let args = [`${__dirname}/client.js`];
 
@@ -14,7 +16,7 @@ fastify.post('/api/client', function(req, res) {
 		update.client_bucket = '0';
 	}
 
-	console.log(JSON.stringify(update));
+	log.info(JSON.stringify(update));
 	args.push(JSON.stringify(update));
 
 	const sub = execFile('node', args, {
@@ -28,6 +30,3 @@ fastify.listen(3000, function(err) {
 	if (err) throw err;
 	console.log(`server listening on ${fastify.server.address().port}`);
 });
-// const server = fastify.listen(3000, function() {
-// 	console.log(`Listening on port ${server.address().port}`);
-// });

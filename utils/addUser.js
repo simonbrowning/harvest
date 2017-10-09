@@ -1,9 +1,11 @@
-const sendRequest = require('../actions/sendRequest.js');
+const sendRequest = require('../actions/sendRequest.js'),
+	log = require('../actions/logging.js');
 
 module.exports = function(pid, user) {
 	return new Promise(async function(resolve, reject) {
 		let new_user;
-		console.log('User to add: ' + user);
+		log.info(`${pid} user to add ${user}`);
+
 		try {
 			new_user = await sendRequest('POST', {
 				path: '/projects/' + pid + '/user_assignments',

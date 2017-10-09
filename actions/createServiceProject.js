@@ -3,7 +3,8 @@ const createProject = require('../utils/createProject'),
 	getTasks = require('../utils/getTasks.js'),
 	processTasks = require('../utils/processTasks.js'),
 	processUsers = require('../utils/processUsers.js'),
-	toggleProject = require('../utils/toggleProject.js');
+	toggleProject = require('../utils/toggleProject.js'),
+	log = require('../actions/logging.js');
 //END dependies
 
 module.exports = function(new_project, old_project) {
@@ -15,13 +16,11 @@ module.exports = function(new_project, old_project) {
 			.then(processTasks)
 			.then(toggleProject)
 			.then(function() {
-				console.log(
-					`finished creating project ${old_project.id} for ${old_project.client_id}`
-				);
+				log.info(`${new_project.client_id} finished creating services project`);
 				resolve();
 			})
 			.catch(function(err) {
-				console.error(`Something bad happend, ${err}`);
+				log.error(`Something bad happend, ${err}`);
 				reject();
 			});
 	});

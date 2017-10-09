@@ -1,38 +1,37 @@
 const addUser = require('../utils/addUser.js'),
-	setPM = require('../utils/setPM.js');
+	setPM = require('../utils/setPM.js'),
+	log = require('../actions/logging.js');
 
 module.exports = function processUsers(data) {
 	return new Promise(function(resolve, reject) {
 		let promises = data.users.map(function({ user_assignment }) {
 			return new Promise(function(resolve, reject) {
+				log.info(`${data.new_pid} user ${user_assignment.user_id} to add`);
 				addUser(data.new_pid, user_assignment.user_id)
 					.then(function(uid) {
-						console.log(
-							`User ${user_assignment.user_id} added to ${data.new_pid}`
-						);
+						log.info(`${data.new_pid} user ${uid} added`);
 
-						console.log(`checking to see if ${user_assignment.user_id} is PM`);
+						log.info(`${data.new_pid} checking to see if user ${uid} is a PM`);
 						if (!user_assignment.is_project_manager) {
-							console.log(`${user_assignment.user_id} is not a PM`);
+							log.info(`${data.new_pid} user ${uid} not a PM`);
 							resolve();
 						} else {
-							console.log(`${user_assignment.user_id} is PM updating...`);
+							log.info(`${data.new_pid} user ${uid} is PM updating...`);
+
 							setPM(data.new_pid, uid)
 								.then(function() {
 									return resolve();
 								})
 								.catch(function(response) {
-									console.error(
-										`failed to set ${user_assignment.user_id} as PM`
-									);
+									log.warn(`${data.new_pid} user ${uid} failed to set as PM`);
 									console.error(response);
 									return resolve();
 								});
 						}
 					})
 					.catch(function(e) {
-						console.error(
-							`failed to add ${user_assignment.user_id} to ${data.new_pid}`
+						log.warn(
+							`${data.new_pid} user ${user_assignment.user_id} failed add`
 						);
 						resolve();
 					});
@@ -41,12 +40,11 @@ module.exports = function processUsers(data) {
 
 		Promise.all(promises)
 			.then(function() {
-				console.log(`finished adding users to ${data.new_pid}`);
+				log.info(`${data.new_pid} finished adding users`);
 				resolve(data);
 			})
 			.catch(function(reason) {
-				console.log(`failed to add all users to ${data.new_pid}`);
-				console.error(reason);
+				log.error(`${data.new_pid} failed adding users: ${reason}`);
 				reject(reason);
 			});
 	});

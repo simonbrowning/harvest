@@ -1,4 +1,5 @@
-const addTask = require('../utils/addTask');
+const addTask = require('../utils/addTask'),
+	log = require('../actions/logging.js');
 
 module.exports = function proccessTasks(data) {
 	return new Promise(function(resolve, reject) {
@@ -6,14 +7,14 @@ module.exports = function proccessTasks(data) {
 			return new Promise(function(resolve, reject) {
 				let task = obj.task_assignment || obj.task;
 				let tid = task.task_id || task.id;
-				console.log('Process task: ', tid);
+				log.info(`${data.new_pid} task ${tid} to add`);
 				addTask(data.new_pid, tid)
 					.then(function() {
-						console.log(`Task ${tid} added to ${data.new_pid}`);
+						log.info(`${data.new_pid} task ${tid} added`);
 						resolve();
 					})
-					.catch(function() {
-						console.error(`failed to add ${tid} to ${data.new_pid}`);
+					.catch(function(e) {
+						log.warn(`${data.new_pid} task ${tid} failed.`);
 						resolve();
 					});
 			});

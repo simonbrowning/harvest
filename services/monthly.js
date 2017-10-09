@@ -4,11 +4,15 @@ const createServiceProject = require('../actions/createServiceProject.js'),
 	sendRequest = require('../actions/sendRequest.js'),
 	_ = require('underscore'),
 	moment = require('moment'),
-	findProject = require('../utils/findProject');
+	findProject = require('../utils/findProject'),
+	log = require('../actions/logging.js');
 
-const last_month = '2017-09';
+process.env.log = 'monthly';
+const last_month = moment()
+	.subtract(1, 'months')
+	.format('YYYY-MM');
 function processProjects(projects) {
-	console.log('Projects in response: ' + projects.length);
+	log.info(`projects in response ${projects.length}`);
 	return new Promise(function(resolve, reject) {
 		let promises = projects.map(function({ project }) {
 			return new Promise(function(resolve, reject) {
@@ -23,7 +27,7 @@ function processProjects(projects) {
 					project.active
 				) {
 					pid = project.id;
-					console.log('Project to process: ' + pid);
+					log.info(`${pid} project to process`);
 					//Set new project name
 					new_project.client_id = project.client_id;
 					new_project.name =
@@ -31,7 +35,7 @@ function processProjects(projects) {
 						moment().format('YYYY-MM');
 					exists = findProject(projects, project.client_id, new_project.name);
 					if (exists) {
-						console.log('New project already exists');
+						log.info(`${pid} new project already exists`);
 						resolve();
 					} else {
 						getPreviousHours(project.id, 1, 1).then(function(hours_used) {
@@ -80,10 +84,10 @@ function processProjects(projects) {
 sendRequest('GET', { path: '/projects' })
 	.then(processProjects)
 	.then(function() {
-		console.log('monthlyRolloverJob has finished');
-		rollover_is_running = 0;
+		log.info('monthlyRolloverJob has finished');
+		log.close();
+		process.exit(0);
 	})
 	.catch(function(err) {
-		console.error('Something failed: ' + err);
-		rollover_is_running = 0;
+		log.error('Something failed: ' + err);
 	});

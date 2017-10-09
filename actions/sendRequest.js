@@ -1,7 +1,8 @@
 const r = require('request'),
 	throttledRequest = require('throttled-request')(r),
 	_ = require('underscore'),
-	config = require('../config');
+	config = require('../config'),
+	log = require('../actions/logging.js');
 
 //configure request throttle
 throttledRequest.configure(config.throttle);
@@ -11,7 +12,7 @@ const sendRequest = function(method, options) {
 	return new Promise(function(resolve, reject) {
 		let response;
 		if (!_.has(options, 'path') || !method) {
-			console.log('No path / method was set');
+			log.debug('No path / method was set');
 		}
 		//Options for reqest
 		const _options = {
@@ -48,12 +49,12 @@ const sendRequest = function(method, options) {
 						cb('success', response.headers.location.match(/\d+$/)[0]); //return resolve(response);
 					} else if (/5\d{2}/.test(response.statusCode)) {
 						if (config.retry.maxRetryies > retry) {
-							console.log('500 error, retrying');
+							log.debug('500 error, retrying');
 							setTimeout(function() {
 								send(options, cb, ++retry);
 							}, Math.floor(config.retry.timeout * (Math.random() * 10)));
 						} else {
-							console.log('Giving up');
+							log.debug('Giving up');
 							cb('failed', response.statusMessage);
 						}
 					} else if (/4\d{2}/.test(response.statusCode)) {

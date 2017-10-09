@@ -21,7 +21,7 @@ module.exports = function({ channel, project, client, pid, role }, text) {
 				.harvest
 				.project_url}/projects/${pid}|${project}> has been created for ${client}.`;
 		}
-		if (!role) {
+		if (!role && !text) {
 			text = `${client}'s hours has been updated.`;
 		}
 
@@ -32,10 +32,8 @@ module.exports = function({ channel, project, client, pid, role }, text) {
 
 		request(options, function(error, response, body) {
 			if (error) {
-				console.log(error);
 				reject(error);
 			} else if (response.statusCode == 404) {
-				console.log(response.body);
 				reject(response.body);
 			} else {
 				resolve();
