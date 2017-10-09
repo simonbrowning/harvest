@@ -35,7 +35,7 @@ function callback(body) {
 					})
 					.catch(function(reason) {
 						console.error(`${PID} failed - ${reason}`);
-						process.exit(1);
+						return false;
 					});
 			}
 		}

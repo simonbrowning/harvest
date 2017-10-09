@@ -28,7 +28,7 @@ function errorHandle(e) {
 	console.log(args.length);
 	console.log(args);
 	if (args.length < 3) {
-		process.exit(1);
+		return false;
 	}
 
 	let client_object = JSON.parse(args[2]);
@@ -57,7 +57,7 @@ function errorHandle(e) {
 		}).catch(errorHandle);
 		if (!existing_client) {
 			console.log("couldn't create client, exiting");
-			process.exit(1);
+			return false;
 		} else {
 			existing_client = existing_client.client;
 		}
@@ -275,5 +275,4 @@ function errorHandle(e) {
 		}
 	}
 	console.log('exiting');
-	process.exit(0);
 })(process.argv);
