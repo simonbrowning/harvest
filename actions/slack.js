@@ -11,17 +11,26 @@ let options = {
 	json: true
 };
 
-module.exports = function({ channel, project, client, pid, role }) {
+module.exports = function({ channel, project, client, pid, role }, text) {
 	return new Promise(function(resolve, reject) {
-		options.body = {
-			channel: `${channel}`,
-			text: `Just to let you have been added as the ${role} to a new deployment project called <${config
+		if (process.env.ENV_VARIABLE === 'dev') {
+			channel = config.slack.channel;
+		}
+		if (!text && role) {
+			text = `Just to let you have been added as the ${role} to a new deployment project called <${config
 				.harvest
-				.project_url}/projects/${pid}|${project}> has been created for ${client}.`
+				.project_url}/projects/${pid}|${project}> has been created for ${client}.`;
+		}
+		if (!role) {
+			text = `${client}'s hours has been updated.`;
+		}
+
+		options.body = {
+			channel: channel,
+			text: text
 		};
 
 		request(options, function(error, response, body) {
-			debugger;
 			if (error) {
 				console.log(error);
 				reject(error);

@@ -98,6 +98,10 @@ function errorHandle(e) {
 						project: project
 					}
 				}).catch(errorHandle);
+			await slack({
+				channel:
+					'@' + client_object.account_manager.replace(' ', '.').toLowerCase()
+			});
 		}
 	} else {
 		console.log('no service project found');
