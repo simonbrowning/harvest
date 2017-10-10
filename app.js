@@ -8,7 +8,6 @@ execFile('node', [`${__dirname}/services/http.js`], {
 	stdio: 'ignore'
 });
 
-console.log('starting');
 const monthlyRolloverJob = new CronJob(
 	'00 00 01 01 */1 *',
 	function() {
@@ -27,5 +26,3 @@ const monthlyRolloverJob = new CronJob(
 	},
 	true /* Start the job right now */
 );
-
-console.log(monthlyRolloverJob);
