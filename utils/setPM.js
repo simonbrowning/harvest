@@ -1,9 +1,9 @@
 const sendRequest = require('../actions/sendRequest.js'),
 	log = require('../actions/logging.js');
 
-module.exports = function(pid, uid) {
+module.exports = function(client_id, pid, uid) {
 	return new Promise(async function(resolve, reject) {
-		log.debug(`${pid} user ${uid} to set as PM`);
+		log.debug(`${client_id}: ${pid} user ${uid} to set as PM`);
 		sendRequest('PUT', {
 			path: `/projects/${pid}/user_assignments/${uid}`,
 			body: {
@@ -13,11 +13,11 @@ module.exports = function(pid, uid) {
 			}
 		})
 			.then(function() {
-				log.debug(`${pid} user ${uid} set as PM`);
+				log.debug(`${client_id}: ${pid} user ${uid} set as PM`);
 				resolve();
 			})
 			.catch(function(err) {
-				log.warn(`${pid} user ${uid} failed to set as PM`);
+				log.warn(`${client_id}: ${pid} user ${uid} failed to set as PM`);
 				reject(err);
 			});
 	});

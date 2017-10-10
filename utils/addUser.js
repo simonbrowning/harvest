@@ -4,7 +4,6 @@ const sendRequest = require('../actions/sendRequest.js'),
 module.exports = function(pid, user) {
 	return new Promise(async function(resolve, reject) {
 		let new_user;
-		log.info(`${pid} user to add ${user}`);
 
 		try {
 			new_user = await sendRequest('POST', {

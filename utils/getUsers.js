@@ -2,12 +2,14 @@ const sendRequest = require('../actions/sendRequest'),
 	log = require('../actions/logging.js');
 
 module.exports = function(data) {
-	log.debug(`${data.old_project.id} get users`);
+	log.debug(`${data.old_project.client_id}: ${data.old_project.id} get users`);
 	return new Promise(function(resolve, reject) {
 		sendRequest('GET', {
 			path: `/projects/${data.old_project.id}/user_assignments`
 		}).then(function(users) {
-			log.debug(`${data.old_project.id} received users`);
+			log.debug(
+				`${data.old_project.client_id}: ${data.old_project.id} received users`
+			);
 			data.users = users;
 			resolve(data);
 		});

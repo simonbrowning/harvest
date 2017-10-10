@@ -1,3 +1,5 @@
+process.env.log = 'monthly';
+
 const createServiceProject = require('../actions/createServiceProject.js'),
 	getPreviousHours = require('../utils/getPreviousHours.js'),
 	getProjectHours = require('../utils/getProjectHours.js'),
@@ -7,10 +9,10 @@ const createServiceProject = require('../actions/createServiceProject.js'),
 	findProject = require('../utils/findProject'),
 	log = require('../actions/logging.js');
 
-process.env.log = 'monthly';
 const last_month = moment()
 	.subtract(1, 'months')
 	.format('YYYY-MM');
+
 function processProjects(projects) {
 	log.info(`projects in response ${projects.length}`);
 	return new Promise(function(resolve, reject) {
@@ -27,17 +29,20 @@ function processProjects(projects) {
 					project.active
 				) {
 					pid = project.id;
-					log.info(`${pid} project to process`);
+					log.info(`${project.client_id}: ${pid} project to process`);
 					//Set new project name
 					new_project.client_id = project.client_id;
 					new_project.name =
 						project.name.match(/(.+)\d{4}\-\d{2}$/)[1] +
-						moment().format('YYYY-MM');
+						moment()
+							.add(1, 'months')
+							.format('YYYY-MM');
 					exists = findProject(projects, project.client_id, new_project.name);
 					if (exists) {
-						log.info(`${pid} new project already exists`);
+						log.info(`${project.client_id}: ${pid} new project already exists`);
 						resolve();
 					} else {
+						log.info(`${project.client_id}: ${pid} getting hours`);
 						getPreviousHours(project.id, 1, 1).then(function(hours_used) {
 							let hours = getProjectHours(project);
 
@@ -64,6 +69,9 @@ function processProjects(projects) {
 							new_project.budget_by = 'project';
 							new_project.billable = true;
 
+							log.info(
+								`${new_project.client_id}: ${pid} create new services project`
+							);
 							createServiceProject(new_project, project)
 								.then(resolve)
 								.catch(reject);

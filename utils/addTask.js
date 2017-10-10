@@ -4,7 +4,6 @@ const sendRequest = require('../actions/sendRequest.js'),
 module.exports = function(pid, task) {
 	return new Promise(async function(resolve, reject) {
 		let new_task;
-		log.info(`${pid} add task ${task}`);
 		try {
 			new_task = await sendRequest('POST', {
 				path: `/projects/${pid}/task_assignments`,

@@ -1,3 +1,5 @@
+process.env.log = 'client';
+
 const _ = require('underscore'),
 	config = require('../config'),
 	moment = require('moment');
@@ -19,7 +21,6 @@ const sendRequest = require('../actions/sendRequest.js'),
 	slack = require('../actions/slack.js'),
 	log = require('../actions/logging.js');
 
-process.env.log = 'client';
 function errorHandle(e) {
 	log.warn(`caught rejection: ${e}`);
 	return null;
@@ -31,22 +32,22 @@ function errorHandle(e) {
 	}
 
 	let client_object = JSON.parse(args[2]);
-	log.info('getting clients');
+	log.info(client_object.account + ': getting clients');
 	const clients = await sendRequest('GET', { path: '/clients' }).catch(
 		errorHandle
 	);
-	log.info('getting projects');
+	log.info(client_object.account + ': getting projects');
 	const projects = await sendRequest('GET', { path: '/projects' }).catch(
 		errorHandle
 	);
-	log.info('seeing if client already exisits');
+	log.info(client_object.account + ': seeing if client already exists');
 	let existing_client = findClient(client_object.account, clients);
 
 	if (existing_client) {
 		existing_client = existing_client.client;
-		log.warn(client_object.account + ' client already exisits');
+		log.warn(client_object.account + ': client already exists');
 	} else {
-		log.info(client_object.account + ' create client');
+		log.info(client_object.account + ': create client');
 		let new_client = await sendRequest('POST', {
 			path: '/clients',
 			body: { client: { name: client_object.account } }
@@ -56,7 +57,7 @@ function errorHandle(e) {
 			path: `/clients/${new_client}`
 		}).catch(errorHandle);
 		if (!existing_client) {
-			log.error(client_object.account + " couldn't create client, exiting");
+			log.error(client_object.account + ": couldn't create client, exiting");
 			return false;
 		} else {
 			existing_client = existing_client.client;
@@ -70,8 +71,8 @@ function errorHandle(e) {
 	);
 	if (has_service_project) {
 		has_service_project = has_service_project.project;
-		log.info(client_object.account + ' has services project');
-		log.info(client_object.account + ' checking hours');
+		log.info(client_object.account + ': has services project');
+		log.info(client_object.account + ': checking hours');
 		let update_notes = false;
 		let project = {};
 		let hours = getProjectHours(has_service_project);
@@ -91,7 +92,7 @@ function errorHandle(e) {
 			update_notes = true;
 		}
 		if (update_notes) {
-			log.info(client_object.account + ' updating hours.');
+			log.info(client_object.account + ': updating hours.');
 			(project.client_id = has_service_project.client_id),
 				(project.notes = `client_hours:${hours.monthly_hours};client_bucket:${hours.client_bucket}`),
 				await sendRequest('PUT', {
@@ -100,15 +101,19 @@ function errorHandle(e) {
 						project: project
 					}
 				}).catch(errorHandle);
+			log.info(client_object.account + ': hours updated.');
 			await slack({
 				channel:
-					'@' + client_object.account_manager.replace(' ', '.').toLowerCase()
+					'@' + client_object.account_manager.replace(' ', '.').toLowerCase(),
+				client: client_object.account
 			});
+		} else {
+			log.info(client_object.account + ': hours up to date.');
 		}
 	} else {
-		log.info(client_object.account + 'no services project found.');
+		log.info(client_object.account + ': no services project found.');
 
-		log.info(client_object.account + ' create service project');
+		log.info(client_object.account + ': create service project');
 		let new_project = {},
 			services_project;
 
@@ -133,6 +138,7 @@ function errorHandle(e) {
 		new_project.budget_by = 'project';
 		new_project.billable = true;
 		await createServiceProject(new_project, services_project);
+		log.info(client_object.account + ': service project created');
 	}
 
 	//run through deployment project
@@ -149,11 +155,11 @@ function errorHandle(e) {
 
 		if (deployment_project) {
 			log.warn(
-				`deployment_project "${client_object.deployment_project}" already exists for ${existing_client.name}`
+				`${client_object.account}: deployment_project "${client_object.deployment_project}" already exists.`
 			);
 		} else {
 			log.info(
-				`${existing_client.name} create project called: "${client_object.deployment_project}"`
+				`${client_object.account}: create deployment project called: "${client_object.deployment_project}"`
 			);
 
 			let data = await createProject({
@@ -169,10 +175,10 @@ function errorHandle(e) {
 			}).catch(errorHandle);
 
 			log.info(
-				`${client_object.account} created deployment project ${data.new_pid}`
+				`${client_object.account}: created deployment project ${data.new_pid}`
 			);
 
-			log.info(`${client_object.account} - ${data.new_pid} getting tasks`);
+			log.info(`${client_object.account}: ${data.new_pid} getting tasks`);
 			if (client_object.type) {
 				log.info('get tasks');
 				let tasks = await sendRequest('GET', { path: '/tasks' });
@@ -186,11 +192,15 @@ function errorHandle(e) {
 						filteredTasks = findTasks(tasks, 'iQ');
 					}
 					log.info(`${client_object.account} - ${data.new_pid} adding tasks`);
-					await processTasks({ tasks: filteredTasks, new_pid: data.new_pid });
+					await processTasks({
+						old_project: { client_id: client_object.account },
+						tasks: filteredTasks,
+						new_pid: data.new_pid
+					});
 				}
 			}
 
-			log.info(`${client_object.account} - ${data.new_pid} getting team`);
+			log.info(`${client_object.account}: ${data.new_pid} getting team`);
 			const people = await sendRequest('GET', { path: '/people' }).catch(
 				errorHandle
 			);
@@ -198,13 +208,14 @@ function errorHandle(e) {
 				log.error(`couldn't get team/people/users`);
 			}
 
+			log.info(`${client_object.account}: ${data.new_pid} adding users`);
 			//Account Manager
-			log.info(`${client_object.account} - ${data.new_pid} setting AM`);
+			log.info(`${client_object.account}: ${data.new_pid} setting AM`);
 			let am = {};
 			try {
 				am.user = findUser(people, client_object.account_manager).user;
 				log.info(
-					`${client_object.account} - ${data.new_pid} found ${client_object.account_manager}`
+					`${client_object.account}: ${data.new_pid} found ${client_object.account_manager}`
 				);
 				am.uid = await addUser(data.new_pid, am.user.id).catch(errorHandle);
 				await setPM(data.new_pid, am.uid).catch(errorHandle);
@@ -219,18 +230,18 @@ function errorHandle(e) {
 				}).catch(errorHandle);
 			} catch (e) {
 				log.error(
-					`${client_object.account} - ${data.new_pid} Can't find ${client_object.account_manager}, are they a valid user?`
+					`${client_object.account}: ${data.new_pid} Can't find ${client_object.account_manager}, are they a valid user?`
 				);
 			}
 
 			// //Deployment Manager
-			log.info('setting DM');
+			log.info(`${client_object.account}: ${data.new_pid} setting DM`);
 			let dm = {};
 			if (client_object.account_manager !== client_object.deployment_manager) {
 				try {
 					dm.user = findUser(people, client_object.deployment_manager).user;
 					log.info(
-						`${client_object.account} - ${data.new_pid} found ${client_object.deployment_manager}`
+						`${client_object.account}: ${data.new_pid} found ${client_object.deployment_manager}`
 					);
 					dm.uid = await addUser(data.new_pid, dm.user.id).catch(errorHandle);
 					await setPM(data.new_pid, dm.uid).catch(errorHandle);
@@ -246,7 +257,7 @@ function errorHandle(e) {
 					}).catch(errorHandle);
 				} catch (e) {
 					log.error(
-						`${client_object.account} - ${data.new_pid} Can't find ${client_object.deployment_manager}, are they a valid user?`
+						`${client_object.account}: ${data.new_pid} Can't find ${client_object.deployment_manager}, are they a valid user?`
 					);
 				}
 			}
@@ -254,15 +265,15 @@ function errorHandle(e) {
 			//Deployment Enigneer
 			if (client_object.deployment_engineer == 'Partner/Agency') {
 				log.info(
-					`${client_object.account} - ${data.new_pid} Partner/Agency set, ingoring`
+					`${client_object.account}: ${data.new_pid} Partner/Agency set, ingoring`
 				);
 			} else {
-				log.info('setting DE');
+				log.info(`${client_object.account}: ${data.new_pid} setting DE`);
 				let de = {};
 				try {
 					de.user = findUser(people, client_object.deployment_engineer).user;
 					log.info(
-						`${client_object.account} - ${data.new_pid} found ${client_object.deployment_engineer}`
+						`${client_object.account}: ${data.new_pid} found ${client_object.deployment_engineer}`
 					);
 					de.uid = await addUser(data.new_pid, de.user.id).catch(errorHandle);
 
@@ -277,7 +288,7 @@ function errorHandle(e) {
 					}).catch(errorHandle);
 				} catch (e) {
 					log.error(
-						`${client_object.account} - ${data.new_pid} Can't find ${client_object.deployment_engineer}, are they a valid user?`
+						`${client_object.account}: ${data.new_pid} Can't find ${client_object.deployment_engineer}, are they a valid user?`
 					);
 				}
 			}

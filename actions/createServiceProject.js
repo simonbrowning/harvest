@@ -15,13 +15,15 @@ module.exports = function(new_project, old_project) {
 			.then(getTasks)
 			.then(processTasks)
 			.then(toggleProject)
-			.then(function() {
-				log.info(`${new_project.client_id} finished creating services project`);
+			.then(function(data) {
+				log.info(
+					`${new_project.client_id}: ${data.new_pid} finished creating services project`
+				);
 				resolve();
 			})
 			.catch(function(err) {
-				log.error(`Something bad happend, ${err}`);
-				reject();
+				log.error(err);
+				reject(err);
 			});
 	});
 };

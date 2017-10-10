@@ -1,9 +1,10 @@
+process.env.log = 'http';
+
 const fastify = require('fastify')(),
 	_ = require('underscore'),
 	{ execFile } = require('child_process'),
 	log = require('../actions/logging.js');
 
-process.env.log = 'http';
 fastify.post('/api/client', function(req, res) {
 	let args = [`${__dirname}/client.js`];
 

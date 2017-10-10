@@ -18,7 +18,7 @@ module.exports = function(pid, start, end) {
 			tasks,
 			hours_used = 0;
 		try {
-			log.info(`${pid} get time report`);
+			log.debug(`${pid} get time report`);
 			report = await sendRequest('GET', {
 				path: `/projects/${pid}/entries?from=${start_date}&to=${end_date}`
 			});
@@ -27,7 +27,7 @@ module.exports = function(pid, start, end) {
 		}
 
 		try {
-			log.info(`${pid} get tasks for entries`);
+			log.debug(`${pid} get tasks for entries`);
 			tasks = await sendRequest('GET', {
 				path: `/projects/${pid}/task_assignments`
 			});
