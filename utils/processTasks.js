@@ -12,7 +12,9 @@ module.exports = function proccessTasks(data) {
 				);
 				addTask(data.new_pid, tid)
 					.then(function() {
-						log.info(`${data.new_pid} task ${tid} added`);
+						log.info(
+							`${data.old_project.client_id}: ${data.new_pid} task ${tid} added`
+						);
 						resolve();
 					})
 					.catch(function(e) {
