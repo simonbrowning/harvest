@@ -7,8 +7,7 @@
 		"dev": "NODE_ENV=dev node app.js",
 		"prod": "NODE_ENV=production node app.js",
 		"http": "NODE_ENV=dev node services/http.js",
-		"addUser": "NODE_ENV=production node tasks/addUser.js",
-		"client": "NODE_ENV=dev node --inspect-brk services/client.js '{\"account\":\"My Test Account\",\"deployment_engineer\":\"James Keith\",\"deployment_project\":\"iQ Deployment\",\"account_manager\":\"Corbin Spicer\",\"deployment_manager\":\"Simon Browning\",\"client_hours\":\"2\",\"client_bucket\":\"0\",\"type\":\"Web\"}'"
+		"addUser": "NODE_ENV=production node tasks/addUser.js"
 	},
 	"keywords": [
 		"Harvest",
@@ -18,6 +17,7 @@
 	"license": "ISC",
 	"dependencies": {
 		"config": "^1.24.0",
+		"cron": "^1.3.0",
 		"fastify": "^0.29.2",
 		"moment": "^2.17.1",
 		"request": "^2.79.0",
