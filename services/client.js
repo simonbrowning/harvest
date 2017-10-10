@@ -303,5 +303,4 @@ function errorHandle(e) {
 		}
 	}
 	log.info(`${client_object.account} finished.`);
-	//process.exit(0);
 })(process.argv);
