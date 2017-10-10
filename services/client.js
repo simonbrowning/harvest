@@ -108,7 +108,7 @@ function errorHandle(e) {
 				client: client_object.account
 			});
 		} else {
-			log.info(client_object.account + ': hours up to date.');
+			log.info(client_object.account + ': hours are up to date.');
 		}
 	} else {
 		log.info(client_object.account + ': no services project found.');
@@ -139,6 +139,14 @@ function errorHandle(e) {
 		new_project.billable = true;
 		await createServiceProject(new_project, services_project);
 		log.info(client_object.account + ': service project created');
+		await slack(
+			{
+				channel:
+					'@' + client_object.account_manager.replace(' ', '.').toLowerCase(),
+				client: client_object.account
+			},
+			`${client_object.account} has been created in Harvest.`
+		);
 	}
 
 	//run through deployment project
@@ -295,5 +303,5 @@ function errorHandle(e) {
 		}
 	}
 	log.info(`${client_object.account} finished.`);
-	process.exit(0);
+	//process.exit(0);
 })(process.argv);
