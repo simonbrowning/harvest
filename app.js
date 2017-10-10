@@ -13,11 +13,10 @@ const monthlyRolloverJob = new CronJob(
 	'00 00 01 01 */1 *',
 	function() {
 		slack({ channel: config.slack.channel }, 'Monthly rollover is rolling!');
-			function() {
-				execFile('node', [`${__dirname}/services/monthly.js`], {
-					detached: true,
-					stdio: 'ignore'
-				});
+		execFile('node', [`${__dirname}/services/monthly.js`], {
+			detached: true,
+			stdio: 'ignore'
+		});
 	},
 	function() {
 		/* This function is executed when the job stops */
