@@ -31,6 +31,10 @@ if (process.env.log) {
 			`Unhandled Rejection at: ${pos}, reason: ${reason}`
 		);
 	});
+
+	process.on('exit', function() {
+		logger.kill();
+	});
 } else {
 	module.exports = {
 		info: function(msg) {},

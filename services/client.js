@@ -28,7 +28,7 @@ function errorHandle(e) {
 
 (async function(args) {
 	if (args.length < 3) {
-		return false;
+		process.exit(1);
 	}
 
 	let client_object = JSON.parse(args[2]);
@@ -58,7 +58,7 @@ function errorHandle(e) {
 		}).catch(errorHandle);
 		if (!existing_client) {
 			log.error(client_object.account + ": couldn't create client, exiting");
-			return false;
+			process.exit(1);
 		} else {
 			existing_client = existing_client.client;
 		}
@@ -295,5 +295,5 @@ function errorHandle(e) {
 		}
 	}
 	log.info(`${client_object.account} finished.`);
-	log.close();
+	process.exit(0);
 })(process.argv);

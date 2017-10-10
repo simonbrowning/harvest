@@ -93,7 +93,6 @@ sendRequest('GET', { path: '/projects' })
 	.then(processProjects)
 	.then(function() {
 		log.info('monthlyRolloverJob has finished');
-		log.close();
 		process.exit(0);
 	})
 	.catch(function(err) {

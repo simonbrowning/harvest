@@ -15,7 +15,7 @@
 		projects = await sendRequest('GET', { path: '/projects' });
 	} catch (e) {
 		console.error('failed get projects');
-		return false;
+		process.exit(1);
 	}
 
 	console.log('getting users');
@@ -23,7 +23,7 @@
 		people = await sendRequest('GET', { path: '/people' });
 	} catch (e) {
 		console.error('failed get users');
-		return false;
+		process.exit(1);
 	}
 
 	console.log('identifying user(s) to add');
