@@ -137,8 +137,30 @@ function errorHandle(e) {
 		new_project.budget = new_project.estimate;
 		new_project.budget_by = 'project';
 		new_project.billable = true;
-		await createServiceProject(new_project, services_project);
-		log.info(client_object.account + ': service project created');
+		let client_services_project = await createServiceProject(
+			new_project,
+			services_project
+		);
+		log.info(
+			`${client_object.account}: ${client_services_project} set PM ${client_object.account_manager}`
+		);
+		let team = await sendRequest('GET', { path: '/people' }).catch(errorHandle);
+		let am = findUser(team, client_object.account_manager).user;
+
+		let am_uid = await addUser(client_services_project, am.id).catch(
+			errorHandle
+		);
+		log.info(
+			`${client_object.account} ${client_services_project}:  added ${client_object.account_manager}`
+		);
+		log.info(am_uid);
+		await setPM(client_services_project, client_services_project, am_uid).catch(
+			errorHandle
+		);
+
+		log.info(
+			`${client_object.account} ${client_services_project}:  service project created`
+		);
 		await slack(
 			{
 				channel:
@@ -195,6 +217,9 @@ function errorHandle(e) {
 					if (client_object.type === 'AudienceStream') {
 						log.info('AS deployment');
 						filteredTasks = findTasks(tasks, 'AS');
+					} else if (client_object.type === 'EventStream') {
+						log.info('ES deployment');
+						filteredTasks = findTasks(tasks, 'eventstream');
 					} else {
 						log.info('assume iQ');
 						filteredTasks = findTasks(tasks, 'iQ');
@@ -303,4 +328,5 @@ function errorHandle(e) {
 		}
 	}
 	log.info(`${client_object.account} finished.`);
+	return false;
 })(process.argv);
