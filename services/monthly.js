@@ -84,7 +84,10 @@ function processProjects(projects) {
 		}); //map
 
 		Promise.all(promises)
-			.then(resolve)
+			.then(function() {
+				log.close();
+				return fasle;
+			})
 			.catch(reject);
 	});
 } //processProjects

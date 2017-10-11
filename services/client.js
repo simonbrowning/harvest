@@ -328,5 +328,6 @@ function errorHandle(e) {
 		}
 	}
 	log.info(`${client_object.account} finished.`);
+	log.close();
 	return false;
 })(process.argv);
