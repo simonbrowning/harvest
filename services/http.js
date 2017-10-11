@@ -5,6 +5,10 @@ const fastify = require('fastify')(),
 	{ execFile } = require('child_process'),
 	log = require('../actions/logging.js');
 
+fastify.get('/api/status', function(req, res) {
+	res.send('Not dead yet.');
+});
+
 fastify.post('/api/client', function(req, res) {
 	let args = [`${__dirname}/client.js`];
 
