@@ -11,7 +11,7 @@ function callback(body) {
 		let PID = project.id;
 		if (
 			PID != config.harvest.default_project &&
-			/(.+)\d{4}\-\d{2}$/.test(project.name) &&
+			project.name === 'Services - 2017-11' &&
 			!!project.active
 		) {
 			console.log(`${PID} to be renamed.`);
@@ -19,11 +19,7 @@ function callback(body) {
 				path: `/projects/${PID}/`,
 				body: {
 					project: {
-						name:
-							project.name.match(/(.+)\d{4}\-\d{2}$/)[1] +
-							moment()
-								.subtract(2, 'months')
-								.format('YYYY-MM'),
+						name: 'Services - 2017-09',
 						client_id: project.client_id
 					}
 				}
