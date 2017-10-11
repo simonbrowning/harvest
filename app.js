@@ -3,7 +3,7 @@ const { execFile } = require('child_process'),
 	slack = require('./actions/slack'),
 	config = require('./config');
 
-execFile('node', [`${__dirname}/services/http.js`], {
+let http = execFile('node', [`${__dirname}/services/http.js`], {
 	detached: true,
 	stdio: 'ignore'
 });
@@ -26,3 +26,9 @@ const monthlyRolloverJob = new CronJob(
 	},
 	true /* Start the job right now */
 );
+
+process.on('SIGINT', () => {
+	console.log('closed');
+	http.kill();
+	process.exit(0);
+});

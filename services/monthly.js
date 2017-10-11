@@ -7,7 +7,9 @@ const createServiceProject = require('../actions/createServiceProject.js'),
 	_ = require('underscore'),
 	moment = require('moment'),
 	findProject = require('../utils/findProject'),
-	log = require('../actions/logging.js');
+	log = require('../actions/logging.js'),
+	slack = require('../actions/slack.js'),
+	config = require('../config');
 
 const last_month = moment()
 	.subtract(1, 'months')
@@ -86,7 +88,7 @@ function processProjects(projects) {
 		Promise.all(promises)
 			.then(function() {
 				log.close();
-				return fasle;
+				return resolve();
 			})
 			.catch(reject);
 	});
@@ -96,7 +98,8 @@ sendRequest('GET', { path: '/projects' })
 	.then(processProjects)
 	.then(function() {
 		log.info('monthlyRolloverJob has finished');
-		process.exit(0);
+		slack({ channel: config.slack.channel }, 'Monthly rollover has finished');
+		return false;
 	})
 	.catch(function(err) {
 		log.error('Something failed: ' + err);
