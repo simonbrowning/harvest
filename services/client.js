@@ -1,4 +1,5 @@
 process.env.log = 'client';
+process.env.process = process.pid;
 
 const _ = require('underscore'),
 	config = require('../config'),
@@ -327,7 +328,7 @@ function errorHandle(e) {
 			}
 		}
 	}
-	log.info(`${client_object.account} finished.`);
+	log.info(`${client_object.account}: finished.`);
 	log.close();
 	return false;
 })(process.argv);
