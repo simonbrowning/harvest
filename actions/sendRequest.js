@@ -45,6 +45,11 @@ const sendRequest = function(method, options) {
 			throttledRequest(options)
 				.on('response', function(resp) {
 					response = resp;
+				})
+				.on('data', function(chunk) {
+					data += chunk;
+				})
+				.on('end', function(res) {
 					if (/201|203/.test(response.statusCode)) {
 						cb('success', response.headers.location.match(/\d+$/)[0]); //return resolve(response);
 					} else if (/5\d{2}/.test(response.statusCode)) {
@@ -55,16 +60,11 @@ const sendRequest = function(method, options) {
 							}, Math.floor(config.retry.timeout * (Math.random() * 10)));
 						} else {
 							log.debug('Giving up');
-							cb('failed', response.statusMessage);
+							cb('failed', data || response.statusMessage);
 						}
 					} else if (/4\d{2}/.test(response.statusCode)) {
-						cb('failed', response.statusMessage);
+						cb('failed', JSON.parse(data).message);
 					}
-				})
-				.on('data', function(chunk) {
-					data += chunk;
-				})
-				.on('end', function() {
 					if (!/5\d{2}|201|203/.test(response.statusCode)) {
 						cb('success', JSON.parse(data || '{}'));
 					}
