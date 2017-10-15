@@ -1,5 +1,7 @@
 process.env.log = 'http';
 
+let last_request = {};
+
 const fastify = require('fastify')(),
 	_ = require('underscore'),
 	{ execFile } = require('child_process'),
@@ -13,6 +15,17 @@ fastify.post('/api/client', function(req, res) {
 	let args = [`${__dirname}/client.js`];
 
 	let update = req.body;
+	log.info(JSON.stringify(update));
+	if (
+		last_request.account === update.account &&
+		last_request.deployment_project === update.deployment_project
+	) {
+		log.info('dupliacte update ignoring');
+		return res.send('duplicate');
+	} else {
+		last_request = update;
+	}
+
 	//If no hours have been set set to 0
 	if (update.client_hours == undefined) {
 		update.client_hours = '0';
