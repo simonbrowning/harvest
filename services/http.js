@@ -16,8 +16,10 @@ fastify.post('/api/client', function(req, res) {
 
 	let update = req.body;
 	log.info(JSON.stringify(update));
+
 	if (
 		last_request.account === update.account &&
+		update.deployment_project &&
 		last_request.deployment_project === update.deployment_project
 	) {
 		log.info('dupliacte update ignoring');
@@ -34,7 +36,6 @@ fastify.post('/api/client', function(req, res) {
 		update.client_bucket = '0';
 	}
 
-	log.info(JSON.stringify(update));
 	args.push(JSON.stringify(update));
 
 	const sub = execFile('node', args, {
