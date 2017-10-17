@@ -155,7 +155,7 @@ function errorHandle(e) {
 			`${client_object.account} ${client_services_project}:  added ${client_object.account_manager}`
 		);
 		log.info(am_uid);
-		await setPM(client_services_project, client_services_project, am_uid).catch(
+		await setPM(existing_client.id, client_services_project, am_uid).catch(
 			errorHandle
 		);
 
@@ -252,7 +252,16 @@ function errorHandle(e) {
 					`${client_object.account}: ${data.new_pid} found ${client_object.account_manager}`
 				);
 				am.uid = await addUser(data.new_pid, am.user.id).catch(errorHandle);
-				await setPM(data.new_pid, am.uid).catch(errorHandle);
+				log.info(
+					`${client_object.account}: ${data.new_pid} setting as PM ${client_object.account_manager} ${am.uid}`
+				);
+				await setPM(data.new_project.client_id, data.new_pid, am.uid).catch(
+					errorHandle
+				);
+
+				log.info(
+					`${client_object.account}: ${data.new_pid} slacking AM: ${client_object.account_manager}`
+				);
 
 				await slack({
 					channel:
@@ -278,8 +287,15 @@ function errorHandle(e) {
 						`${client_object.account}: ${data.new_pid} found ${client_object.deployment_manager}`
 					);
 					dm.uid = await addUser(data.new_pid, dm.user.id).catch(errorHandle);
-					await setPM(data.new_pid, dm.uid).catch(errorHandle);
-
+					log.info(
+						`${client_object.account}: ${data.new_pid} setting as PM ${client_object.account_manager} ${dm.uid}`
+					);
+					await setPM(data.new_project.client_id, data.new_pid, dm.uid).catch(
+						errorHandle
+					);
+					log.info(
+						`${client_object.account}: ${data.new_pid} slacking DM: ${client_object.account_manager}`
+					);
 					await slack({
 						channel:
 							'@' +
@@ -310,6 +326,10 @@ function errorHandle(e) {
 						`${client_object.account}: ${data.new_pid} found ${client_object.deployment_engineer}`
 					);
 					de.uid = await addUser(data.new_pid, de.user.id).catch(errorHandle);
+
+					log.info(
+						`${client_object.account}: ${data.new_pid} slacking DE: ${client_object.account_manager}`
+					);
 
 					await slack({
 						channel:
