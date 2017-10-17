@@ -294,7 +294,7 @@ function errorHandle(e) {
 						errorHandle
 					);
 					log.info(
-						`${client_object.account}: ${data.new_pid} slacking DM: ${client_object.account_manager}`
+						`${client_object.account}: ${data.new_pid} slacking DM: ${client_object.deployment_manager}`
 					);
 					await slack({
 						channel:
@@ -328,7 +328,7 @@ function errorHandle(e) {
 					de.uid = await addUser(data.new_pid, de.user.id).catch(errorHandle);
 
 					log.info(
-						`${client_object.account}: ${data.new_pid} slacking DE: ${client_object.account_manager}`
+						`${client_object.account}: ${data.new_pid} slacking DE: ${client_object.deployment_engineer}`
 					);
 
 					await slack({
