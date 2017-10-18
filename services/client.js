@@ -282,29 +282,39 @@ function errorHandle(e) {
 			let dm = {};
 			if (client_object.account_manager !== client_object.deployment_manager) {
 				try {
-					dm.user = findUser(people, client_object.deployment_manager).user;
-					log.info(
-						`${client_object.account}: ${data.new_pid} found ${client_object.deployment_manager}`
-					);
-					dm.uid = await addUser(data.new_pid, dm.user.id).catch(errorHandle);
-					log.info(
-						`${client_object.account}: ${data.new_pid} setting as PM ${client_object.account_manager} ${dm.uid}`
-					);
-					await setPM(data.new_project.client_id, data.new_pid, dm.uid).catch(
-						errorHandle
-					);
-					log.info(
-						`${client_object.account}: ${data.new_pid} slacking DM: ${client_object.deployment_manager}`
-					);
-					await slack({
-						channel:
-							'@' +
-							client_object.deployment_manager.replace(' ', '.').toLowerCase(),
-						client: client_object.account,
-						project: client_object.deployment_project,
-						pid: data.new_pid,
-						role: 'Deployment Manager'
-					}).catch(errorHandle);
+					console.log('territory ', client_object.territory);
+					dm.users = findUser(people, client_object.deployment_manager, [
+						client_object.territory,
+						'Project Management'
+					]);
+					dm.users.forEach(async function({ user }) {
+						try {
+							log.info(
+								`${client_object.account}: ${data.new_pid} found ${user.first_name} ${user.last_name}`
+							);
+							let uid = await addUser(data.new_pid, user.id).catch(errorHandle);
+							log.info(
+								`${client_object.account}: ${data.new_pid} setting as PM ${user.first_name} ${user.last_name} (${uid})`
+							);
+							await setPM(data.new_project.client_id, data.new_pid, uid).catch(
+								errorHandle
+							);
+							log.info(
+								`${client_object.account}: ${data.new_pid} slacking DM: ${user.first_name} ${user.last_name}`
+							);
+							await slack({
+								channel: '@' + user.email.toLowerCase().match(/^(.+)\@/)[1],
+								client: client_object.account,
+								project: client_object.deployment_project,
+								pid: data.new_pid,
+								role: 'Deployment Manager'
+							}).catch(errorHandle);
+						} catch (e) {
+							log.error(
+								`failed to add DM: ${user.first_name} ${user.last_name} - ${e}`
+							);
+						}
+					});
 				} catch (e) {
 					log.error(
 						`${client_object.account}: ${data.new_pid} Can't find ${client_object.deployment_manager}, are they a valid user?`
