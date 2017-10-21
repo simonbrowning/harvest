@@ -146,18 +146,23 @@ function errorHandle(e) {
 			`${client_object.account}: ${client_services_project} set PM ${client_object.account_manager}`
 		);
 		let team = await sendRequest('GET', { path: '/people' }).catch(errorHandle);
-		let am = findUser(team, client_object.account_manager).user;
-
-		let am_uid = await addUser(client_services_project, am.id).catch(
-			errorHandle
-		);
-		log.info(
-			`${client_object.account} ${client_services_project}:  added ${client_object.account_manager}`
-		);
-		log.info(am_uid);
-		await setPM(existing_client.id, client_services_project, am_uid).catch(
-			errorHandle
-		);
+		try {
+			let am = findUser(team, client_object.account_manager).user;
+			let am_uid = await addUser(client_services_project, am.id).catch(
+				errorHandle
+			);
+			log.info(
+				`${client_object.account} ${client_services_project}:  added ${client_object.account_manager}`
+			);
+			log.info(am_uid);
+			await setPM(existing_client.id, client_services_project, am_uid).catch(
+				errorHandle
+			);
+		} catch (e) {
+			log.error(
+				`${client_object.account}: ${client_services_project} Can't find ${client_object.account_manager}, are they a valid user?`
+			);
+		}
 
 		log.info(
 			`${client_object.account} ${client_services_project}:  service project created`
