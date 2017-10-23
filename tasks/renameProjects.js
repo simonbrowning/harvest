@@ -15,7 +15,7 @@ function callback(body) {
 			!!project.active
 		) {
 			console.log(`${PID} to be renamed.`);
-			sendRequest('PUT', {
+			sendRequest('PATCH', {
 				path: `/projects/${PID}/`,
 				body: {
 					project: {

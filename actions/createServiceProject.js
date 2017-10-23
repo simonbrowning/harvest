@@ -1,6 +1,6 @@
 const createProject = require('../utils/createProject'),
-	getUsers = require('../utils/getUsers.js'),
-	getTasks = require('../utils/getTasks.js'),
+	getUsers = require('../utils/getProjectUsers.js'),
+	getTasks = require('../utils/getProjectTasks.js'),
 	processTasks = require('../utils/processTasks.js'),
 	processUsers = require('../utils/processUsers.js'),
 	toggleProject = require('../utils/toggleProject.js'),

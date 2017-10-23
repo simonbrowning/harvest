@@ -12,7 +12,7 @@ module.exports = function(data) {
 					.id} deactivating project`
 			);
 			try {
-				toggle = sendRequest('PUT', {
+				toggle = sendRequest('PATCH', {
 					path: `/projects/${pid}/toggle`
 				});
 			} catch (e) {

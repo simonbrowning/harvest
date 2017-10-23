@@ -21,7 +21,7 @@ function callback(body) {
 				console.log(`${PID} has emails configured`);
 			} else {
 				console.log(`${PID} currently set to no emails... updating `);
-				sendRequest('PUT', {
+				sendRequest('PATCH', {
 					path: `/projects/${PID}`,
 					body: {
 						project: {

@@ -17,12 +17,13 @@ const sendRequest = function(method, options) {
 		//Options for reqest
 		const _options = {
 			method: method,
-			uri: config.harvest.project_url,
+			uri: config.harvestv2.project_url,
 			headers: {
-				'User-Agent': 'node-harvest',
+				'User-Agent': config.harvestv2.useragent,
 				'Content-Type': 'application/json',
 				Accept: 'application/json',
-				Authorization: config.harvest.auth
+				'Harvest-Account-Id': config.harvestv2.accountID,
+				Authorization: config.harvestv2.auth
 			},
 			json: true // Automatically parses the JSON string in the response
 		};

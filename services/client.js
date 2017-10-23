@@ -96,7 +96,7 @@ function errorHandle(e) {
 			log.info(client_object.account + ': updating hours.');
 			(project.client_id = has_service_project.client_id),
 				(project.notes = `client_hours:${hours.monthly_hours};client_bucket:${hours.client_bucket}`),
-				await sendRequest('PUT', {
+				await sendRequest('PATCH', {
 					path: `/projects/${has_service_project.id}`,
 					body: {
 						project: project
