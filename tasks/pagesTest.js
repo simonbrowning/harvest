@@ -1,6 +1,6 @@
-const getPages = require('../utils/getPages.js');
+const getPages = require('../actions/getPages.js');
 
-getPages('')
+getPages('projects')
 	.then(function(result) {
 		console.log('finished!');
 	})

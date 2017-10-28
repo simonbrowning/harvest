@@ -6,6 +6,7 @@ const _ = require('underscore'),
 	moment = require('moment');
 
 const sendRequest = require('../actions/sendRequest.js'),
+	getPages = require('../actions/getPages.js'),
 	createServiceProject = require('../actions/createServiceProject.js'),
 	findClient = require('../utils/findClient.js'),
 	findProject = require('../utils/findProject.js'),
@@ -34,13 +35,9 @@ function errorHandle(e) {
 
 	let client_object = JSON.parse(args[2]);
 	log.info(client_object.account + ': getting clients');
-	const clients = await sendRequest('GET', { path: '/clients' }).catch(
-		errorHandle
-	);
+	const clients = await getPages('clients').catch(errorHandle);
 	log.info(client_object.account + ': getting projects');
-	const projects = await sendRequest('GET', { path: '/projects' }).catch(
-		errorHandle
-	);
+	const projects = await getPages('projects').catch(errorHandle);
 	log.info(client_object.account + ': seeing if client already exists');
 	let existing_client = findClient(client_object.account, clients);
 
@@ -145,7 +142,7 @@ function errorHandle(e) {
 		log.info(
 			`${client_object.account}: ${client_services_project} set PM ${client_object.account_manager}`
 		);
-		let team = await sendRequest('GET', { path: '/people' }).catch(errorHandle);
+		let team = await getPages('people').catch(errorHandle);
 		try {
 			let am = findUser(team, client_object.account_manager).user;
 			let am_uid = await addUser(client_services_project, am.id).catch(
@@ -217,7 +214,7 @@ function errorHandle(e) {
 			log.info(`${client_object.account}: ${data.new_pid} getting tasks`);
 			if (client_object.type) {
 				log.info('get tasks');
-				let tasks = await sendRequest('GET', { path: '/tasks' });
+				let tasks = await getPages('tasks');
 				if (tasks) {
 					let filteredTasks;
 					if (client_object.type === 'AudienceStream') {
@@ -240,9 +237,7 @@ function errorHandle(e) {
 			}
 
 			log.info(`${client_object.account}: ${data.new_pid} getting team`);
-			const people = await sendRequest('GET', { path: '/people' }).catch(
-				errorHandle
-			);
+			const people = await getPages('people').catch(errorHandle);
 			if (!people) {
 				log.error(`couldn't get team/people/users`);
 			}

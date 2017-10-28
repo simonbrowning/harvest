@@ -3,7 +3,7 @@ process.env.log = 'monthly';
 const createServiceProject = require('../actions/createServiceProject.js'),
 	getPreviousHours = require('../utils/getPreviousHours.js'),
 	getProjectHours = require('../utils/getProjectHours.js'),
-	sendRequest = require('../actions/sendRequest.js'),
+	getPages = require('../actions/getPages.js'),
 	_ = require('underscore'),
 	moment = require('moment'),
 	findProject = require('../utils/findProject'),
@@ -94,7 +94,7 @@ function processProjects(projects) {
 	});
 } //processProjects
 
-sendRequest('GET', { path: '/projects' })
+getPages('projects')
 	.then(processProjects)
 	.then(function() {
 		log.info('monthlyRolloverJob has finished');

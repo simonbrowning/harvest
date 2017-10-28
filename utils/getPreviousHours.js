@@ -1,8 +1,8 @@
 const moment = require('moment'),
 	_ = require('underscore'),
 	sendRequest = require('../actions/sendRequest.js'),
-	isBillable = require('../utils/isBillable.js'),
-	log = require('../actions/logging.js');
+	log = require('../actions/logging.js'),
+	getPages = require('../actions/getPages.js');
 
 module.exports = function(pid, start, end) {
 	return new Promise(async function(resolve, reject) {
@@ -19,24 +19,18 @@ module.exports = function(pid, start, end) {
 			hours_used = 0;
 		try {
 			log.debug(`${pid} get time report`);
-			report = await sendRequest('GET', {
-				path: `/projects/${pid}/entries?from=${start_date}&to=${end_date}`
+			report = await getPages('time_entries', {
+				project_id: pid,
+				from: start_date,
+				to: end_date
 			});
 		} catch (e) {
 			reject(`failed to get report for ${pid}`);
 		}
 
-		try {
-			log.debug(`${pid} get tasks for entries`);
-			tasks = await sendRequest('GET', {
-				path: `/projects/${pid}/task_assignments`
-			});
-		} catch (e) {
-			reject(`failed to get tasks for ${pid}`);
-		}
-		_.each(report, function({ day_entry }) {
-			if (isBillable(day_entry.task_id, tasks)) {
-				hours_used += day_entry.hours;
+		_.each(report, function(entry) {
+			if (entry.billable) {
+				hours_used += entry.hours;
 			}
 		});
 		return resolve(hours_used);

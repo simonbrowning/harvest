@@ -1,22 +1,26 @@
 const sendRequest = require('../actions/sendRequest'),
 	log = require('../actions/logging.js');
 
-module.exports = function(item) {
+module.exports = function(item, options) {
 	return new Promise(function(resolve, reject) {
 		console.log(`Getting full list of ${item}s`);
 		(async function() {
 			let data = [],
 				numOfPages,
-				promises = [];
+				promises = [],
+				path = `/${item}/`;
 
 			function getPage(page) {
 				return new Promise(function(resolve, reject) {
+					if (path.indexOf('?') > -1) {
+						path = `${path}&page=${page}`;
+					}
 					sendRequest('GET', {
-						path: `/${item}/?page=${page}`
+						path
 					})
 						.then(function(response) {
 							data = data.concat(response[item]);
-							console.log(page, data.length);
+							//console.log(page, data.length);
 							resolve();
 						})
 						.catch(function(reason) {
@@ -27,9 +31,18 @@ module.exports = function(item) {
 				});
 			}
 
+			if (options) {
+				let query = [];
+				for (var key in options) {
+					if (options.hasOwnProperty(key)) {
+						query.push(`${key}=${options[key]}`);
+					}
+				}
+				path = `${path}?${query.join('&')}`;
+			}
 			//console.log(``);
 			await sendRequest('GET', {
-				path: `/${item}/`
+				path
 			})
 				.then(function(response) {
 					numOfPages = response.total_pages + 1;
@@ -42,7 +55,7 @@ module.exports = function(item) {
 					}
 
 					Promise.all(promises).then(function() {
-						console.log(data.length);
+						console.log('finished looping, total entries: ', data.length);
 						resolve(data);
 					});
 				})
