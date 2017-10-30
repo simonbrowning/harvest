@@ -287,7 +287,6 @@ function errorHandle(e) {
 			let dm = {};
 			if (client_object.account_manager !== client_object.deployment_manager) {
 				try {
-					console.log('territory ', client_object.territory);
 					dm.users = findUser(people, client_object.deployment_manager, [
 						client_object.territory,
 						'Project Management'
