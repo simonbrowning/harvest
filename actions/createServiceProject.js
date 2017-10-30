@@ -10,7 +10,7 @@ const createProject = require('../utils/createProject'),
 module.exports = function(new_project, old_project) {
 	return new Promise(function(resolve, reject) {
 		createProject({ old_project: old_project, new_project: new_project })
-			.then(getUserAssignmnet)
+			.then(getUsers)
 			.then(processUsers)
 			.then(getTasksAssignmnet)
 			.then(processTasks)
