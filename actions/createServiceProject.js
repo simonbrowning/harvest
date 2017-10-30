@@ -1,6 +1,6 @@
 const createProject = require('../utils/createProject'),
-	getUsers = require('../utils/getUsers.js'),
-	getTasks = require('../utils/getTasks.js'),
+	getUsers = require('../utils/getUserAssignment.js'),
+	getTasks = require('../utils/getTasksAssignment.js'),
 	processTasks = require('../utils/processTasks.js'),
 	processUsers = require('../utils/processUsers.js'),
 	toggleProject = require('../utils/toggleProject.js'),
@@ -10,9 +10,9 @@ const createProject = require('../utils/createProject'),
 module.exports = function(new_project, old_project) {
 	return new Promise(function(resolve, reject) {
 		createProject({ old_project: old_project, new_project: new_project })
-			.then(getUsers)
+			.then(getUserAssignmnet)
 			.then(processUsers)
-			.then(getTasks)
+			.then(getTasksAssignmnet)
 			.then(processTasks)
 			.then(toggleProject)
 			.then(function(data) {
