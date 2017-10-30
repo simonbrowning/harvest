@@ -31,7 +31,7 @@ function processProjects(projects) {
 					project.active
 				) {
 					pid = project.id;
-					log.info(`${project.client_id}: ${pid} project to process`);
+					log.info(`${project.client.name}: ${pid} project to process`);
 					//Set new project name
 					new_project.client_id = project.client_id;
 					new_project.name =
@@ -41,10 +41,12 @@ function processProjects(projects) {
 							.format('YYYY-MM');
 					exists = findProject(projects, project.client_id, new_project.name);
 					if (exists) {
-						log.info(`${project.client_id}: ${pid} new project already exists`);
+						log.info(
+							`${project.client.name}: ${pid} new project already exists`
+						);
 						resolve();
 					} else {
-						log.info(`${project.client_id}: ${pid} getting hours`);
+						log.info(`${project.client.name}: ${pid} getting hours`);
 						getPreviousHours(project.id, 1, 1).then(function(hours_used) {
 							let hours = getProjectHours(project);
 
@@ -72,7 +74,7 @@ function processProjects(projects) {
 							new_project.billable = true;
 
 							log.info(
-								`${new_project.client_id}: ${pid} create new services project`
+								`${new_project.client.name}: ${pid} create new services project`
 							);
 							createServiceProject(new_project, project)
 								.then(resolve)

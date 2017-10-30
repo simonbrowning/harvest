@@ -17,7 +17,8 @@ module.exports = function(new_project, old_project) {
 			.then(toggleProject)
 			.then(function(data) {
 				log.info(
-					`${new_project.client_id}: ${data.new_pid} finished creating services project`
+					`${new_project.client
+						.id}: ${data.new_pid} finished creating services project`
 				);
 				resolve(data.new_pid);
 			})

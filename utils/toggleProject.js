@@ -8,7 +8,7 @@ module.exports = function(data) {
 			pid = data.old_project.id;
 		if (config.harvest.default_project !== pid) {
 			log.info(
-				`${data.old_project.client_id}: ${data.old_project
+				`${data.old_project.client.name}: ${data.old_project
 					.id} deactivating project`
 			);
 			try {

@@ -8,19 +8,20 @@ module.exports = function proccessTasks(data) {
 				let task = obj.task_assignment || obj.task;
 				let tid = task.task_id || task.id;
 				log.info(
-					`${data.old_project.client_id}: ${data.new_pid} task ${tid} to add`
+					`${data.old_project.client.name}: ${data.new_pid} task ${tid} to add`
 				);
 				addTask(data.new_pid, tid)
 					.then(function() {
 						log.info(
-							`${data.old_project.client_id}: ${data.new_pid} task ${tid} added`
+							`${data.old_project.client
+								.name}: ${data.new_pid} task ${tid} added`
 						);
 						resolve();
 					})
 					.catch(function(e) {
 						log.warn(
-							`${data.old_project
-								.client_id}: ${data.new_pid} task ${tid} failed.`
+							`${data.old_project.client
+								.name}: ${data.new_pid} task ${tid} failed.`
 						);
 						resolve();
 					});

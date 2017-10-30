@@ -14,13 +14,13 @@ module.exports = function(data) {
 			});
 		} catch (e) {
 			log.warn(
-				`${data.new_project.client_id} failed to create new project: ${e}`
+				`${data.new_project.client.name} failed to create new project: ${e}`
 			);
 			reject(
-				`${data.new_project.client_id} failed to create new project: ${e}`
+				`${data.new_project.client.name} failed to create new project: ${e}`
 			);
 		}
-		log.debug(`${data.new_project.client_id} - ${new_project} created`);
+		log.debug(`${data.new_project.client.name} - ${new_project} created`);
 		data.new_pid = new_project;
 		resolve(data);
 	});
