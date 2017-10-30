@@ -15,7 +15,7 @@ const sendRequest = require('../actions/sendRequest.js'),
 	getProjectHours = require('../utils/getProjectHours.js'),
 	cloneProject = require('../utils/cloneProject.js'),
 	createProject = require('../utils/createProject.js'),
-	getTasks = require('../utils/getTasks'),
+	getTasks = require('../utils/getTasksAssignment.js'),
 	addUser = require('../utils/addUser.js'),
 	addTask = require('../utils/addTask.js'),
 	setPM = require('../utils/setPM.js'),
@@ -282,7 +282,6 @@ function errorHandle(e) {
 			let dm = {};
 			if (client_object.account_manager !== client_object.deployment_manager) {
 				try {
-					console.log('territory ', client_object.territory);
 					dm.users = findUser(people, client_object.deployment_manager, [
 						client_object.territory,
 						'Project Management'

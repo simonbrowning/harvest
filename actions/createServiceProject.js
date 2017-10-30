@@ -1,6 +1,6 @@
 const createProject = require('../utils/createProject'),
-	getUsers = require('../utils/getProjectUsers.js'),
-	getTasks = require('../utils/getProjectTasks.js'),
+	getUsers = require('../utils/getUserAssignment.js'),
+	getTasks = require('../utils/getTasksAssignment.js'),
 	processTasks = require('../utils/processTasks.js'),
 	processUsers = require('../utils/processUsers.js'),
 	toggleProject = require('../utils/toggleProject.js'),
@@ -18,7 +18,7 @@ module.exports = function(new_project, old_project) {
 			.then(function(data) {
 				log.info(
 					`${new_project.client
-						.id}: ${data.new_pid} finished creating services project`
+						.name}: ${data.new_pid} finished creating services project`
 				);
 				resolve(data.new_pid);
 			})
