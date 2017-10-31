@@ -22,7 +22,7 @@ const sendRequest = function(method, options) {
 				'User-Agent': config.harvestv2.useragent,
 				'Content-Type': 'application/json',
 				Accept: 'application/json',
-				'Harvest-Account-Id': config.harvestv2.accountID,
+				'Harvest-Account-ID': config.harvestv2.accountID,
 				Authorization: config.harvestv2.auth
 			},
 			json: true // Automatically parses the JSON string in the response
@@ -40,7 +40,6 @@ const sendRequest = function(method, options) {
 			}
 		}
 		//Make request
-
 		const send = function(options, cb, retry) {
 			let data = '';
 			throttledRequest(options)
@@ -64,7 +63,8 @@ const sendRequest = function(method, options) {
 							cb('failed', data || response.statusMessage);
 						}
 					} else if (/4\d{2}/.test(response.statusCode)) {
-						cb('failed', JSON.parse(data).message);
+						let error = JSON.parse(data);
+						cb('failed', error.error || error.error_description);
 					}
 					if (!/5\d{2}|201|203/.test(response.statusCode)) {
 						cb('success', JSON.parse(data || '{}'));

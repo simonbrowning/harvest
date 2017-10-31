@@ -17,10 +17,10 @@ module.exports = function(new_project, old_project) {
 			.then(toggleProject)
 			.then(function(data) {
 				log.info(
-					`${new_project.client
+					`${data.new_project.client
 						.name}: ${data.new_pid} finished creating services project`
 				);
-				resolve(data.new_pid);
+				resolve(data.new_project);
 			})
 			.catch(function(err) {
 				log.error(err);

@@ -42,13 +42,12 @@ function errorHandle(e) {
 	let existing_client = findClient(client_object.account, clients);
 
 	if (existing_client) {
-		existing_client = existing_client.client;
-		log.warn(client_object.account + ': client already exists');
+		log.info(client_object.account + ': client already exists');
 	} else {
 		log.info(client_object.account + ': create client');
 		let new_client = await sendRequest('POST', {
 			path: '/clients',
-			body: { client: { name: client_object.account } }
+			form: { name: client_object.account }
 		}).catch(errorHandle);
 
 		existing_client = await sendRequest('GET', {
@@ -57,10 +56,9 @@ function errorHandle(e) {
 		if (!existing_client) {
 			log.error(client_object.account + ": couldn't create client, exiting");
 			process.exit(1);
-		} else {
-			existing_client = existing_client.client;
 		}
 	}
+
 	//Sort out services projects
 	let has_service_project = findProject(
 		projects,
@@ -68,7 +66,7 @@ function errorHandle(e) {
 		config.harvest.service_project
 	);
 	if (has_service_project) {
-		has_service_project = has_service_project.project;
+		has_service_project = has_service_project;
 		log.info(client_object.account + ': has services project');
 		log.info(client_object.account + ': checking hours');
 		let update_notes = false;
@@ -95,8 +93,8 @@ function errorHandle(e) {
 				(project.notes = `client_hours:${hours.monthly_hours};client_bucket:${hours.client_bucket}`),
 				await sendRequest('PATCH', {
 					path: `/projects/${has_service_project.id}`,
-					body: {
-						project: project
+					form: {
+						project
 					}
 				}).catch(errorHandle);
 			log.info(client_object.account + ': hours updated.');
@@ -117,9 +115,10 @@ function errorHandle(e) {
 
 		services_project = findProject(
 			projects,
-			findClient('[TEMPLATES]', clients).client.id,
+			findClient('[TEMPLATES]', clients).id,
 			'Services '
-		).project;
+		);
+
 		cloneProject(services_project, new_project);
 
 		new_project.name =
@@ -135,12 +134,13 @@ function errorHandle(e) {
 		new_project.budget = new_project.estimate;
 		new_project.budget_by = 'project';
 		new_project.billable = true;
+
 		let client_services_project = await createServiceProject(
 			new_project,
 			services_project
 		);
 		log.info(
-			`${client_object.account}: ${client_services_project} set PM ${client_object.account_manager}`
+			`${client_object.account}: ${client_services_project.name} set PM ${client_object.account_manager}`
 		);
 		let team = await getPages('people').catch(errorHandle);
 		try {
@@ -149,7 +149,7 @@ function errorHandle(e) {
 				errorHandle
 			);
 			log.info(
-				`${client_object.account} ${client_services_project}:  added ${client_object.account_manager}`
+				`${client_object.account} ${client_services_project.name}:  added ${client_object.account_manager}`
 			);
 			log.info(am_uid);
 			await setPM(existing_client.id, client_services_project, am_uid).catch(
@@ -157,12 +157,12 @@ function errorHandle(e) {
 			);
 		} catch (e) {
 			log.error(
-				`${client_object.account}: ${client_services_project} Can't find ${client_object.account_manager}, are they a valid user?`
+				`${client_object.account}: ${client_services_project.id} Can't find ${client_object.account_manager}, are they a valid user?`
 			);
 		}
 
 		log.info(
-			`${client_object.account} ${client_services_project}:  service project created`
+			`${client_object.account} ${client_services_project.id}:  service project created`
 		);
 		await slack(
 			{
@@ -208,36 +208,37 @@ function errorHandle(e) {
 			}).catch(errorHandle);
 
 			log.info(
-				`${client_object.account}: created deployment project ${data.new_pid}`
+				`${client_object.account}: ${data.new_project
+					.name} - ${data.new_pid} created deployment project`
 			);
 
 			log.info(`${client_object.account}: ${data.new_pid} getting tasks`);
 			if (client_object.type) {
-				log.info('get tasks');
 				let tasks = await getPages('tasks');
 				if (tasks) {
 					let filteredTasks;
 					if (client_object.type === 'AudienceStream') {
-						log.info('AS deployment');
+						log.info(`${client_object.account}: ${data.new_pid} AS deployment`);
 						filteredTasks = findTasks(tasks, 'AS');
 					} else if (client_object.type === 'EventStream') {
-						log.info('ES deployment');
+						log.info(`${client_object.account}: ${data.new_pid} ES deployment`);
 						filteredTasks = findTasks(tasks, 'eventstream');
 					} else {
-						log.info('assume iQ');
+						log.info(`${client_object.account}: ${data.new_pid} iQ deployment`);
 						filteredTasks = findTasks(tasks, 'iQ');
 					}
-					log.info(`${client_object.account} - ${data.new_pid} adding tasks`);
+					log.info(`${client_object.account}: ${data.new_pid} adding tasks`);
 					await processTasks({
 						old_project: { client_id: client_object.account },
 						tasks: filteredTasks,
-						new_pid: data.new_pid
+						new_pid: data.new_pid,
+						new_project: data.new_project
 					});
 				}
 			}
 
 			log.info(`${client_object.account}: ${data.new_pid} getting team`);
-			const people = await getPages('people').catch(errorHandle);
+			const people = await getPages('users').catch(errorHandle);
 			if (!people) {
 				log.error(`couldn't get team/people/users`);
 			}

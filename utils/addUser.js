@@ -7,11 +7,9 @@ module.exports = function(pid, user) {
 
 		try {
 			new_user = await sendRequest('POST', {
-				path: '/projects/' + pid + '/user_assignments',
-				body: {
-					user: {
-						id: user
-					}
+				path: `/projects/${pid}/user_assignments`,
+				form: {
+					user_id: user
 				}
 			});
 		} catch (e) {

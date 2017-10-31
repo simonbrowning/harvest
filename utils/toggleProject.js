@@ -8,7 +8,7 @@ module.exports = function(data) {
 			pid = data.old_project.id;
 		if (config.harvest.default_project !== pid) {
 			log.info(
-				`${data.old_project.client.name}: ${data.old_project
+				`${data.new_project.client.name}: ${data.old_project
 					.id} deactivating project`
 			);
 			try {
@@ -18,6 +18,8 @@ module.exports = function(data) {
 			} catch (e) {
 				reject(`failed to toggle ${pid}`);
 			}
+		} else {
+			log.info('"old" project is the Template ignoring');
 		}
 		resolve(data);
 	});

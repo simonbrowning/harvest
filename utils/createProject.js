@@ -8,19 +8,24 @@ module.exports = function(data) {
 		try {
 			new_project = await sendRequest('POST', {
 				path: '/projects',
-				body: {
-					project: data.new_project
-				}
+				form: data.new_project
 			});
 		} catch (e) {
-			log.warn(
-				`${data.new_project.client.name} failed to create new project: ${e}`
-			);
-			reject(
-				`${data.new_project.client.name} failed to create new project: ${e}`
-			);
+			log.warn(` failed to create new project: ${e}`);
+			reject(` failed to create new project: ${e}`);
 		}
-		log.debug(`${data.new_project.client.name} - ${new_project} created`);
+		try {
+			data.new_project = await sendRequest('GET', {
+				path: `/projects/${new_project}`
+			});
+			log.info(
+				`${data.new_project.client
+					.name}: ${new_project} new service project created`
+			);
+		} catch (e) {
+			log.warn(`Failed to get project ${new_project}`);
+		}
+
 		data.new_pid = new_project;
 		resolve(data);
 	});

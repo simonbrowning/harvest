@@ -3,7 +3,7 @@ const sendRequest = require('../actions/sendRequest'),
 
 module.exports = function(item, options) {
 	return new Promise(function(resolve, reject) {
-		console.log(`Getting full list of ${item}s`);
+		console.log(`Getting full list of ${item}`);
 		(async function() {
 			let data = [],
 				numOfPages,
@@ -48,9 +48,7 @@ module.exports = function(item, options) {
 					numOfPages = response.total_pages + 1;
 					data = data.concat(response[item]);
 
-					console.log('loop pages');
 					for (let i = 2; i < numOfPages; ++i) {
-						console.log(`get page ${i}`);
 						promises.push(getPage(i));
 					}
 
