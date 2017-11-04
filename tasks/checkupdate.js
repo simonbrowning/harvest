@@ -1,7 +1,5 @@
 const config = require('../config'),
 	sendRequest = require('../actions/sendRequest'),
-	getTasks = require('../utils/getTasks'),
-	getUsers = require('../utils/getUsers'),
 	processTasks = require('../utils/processTasks'),
 	processUsers = require('../utils/processUsers');
 
@@ -25,8 +23,7 @@ async function callback(projects) {
 
 	let promises = projects.map(function({ project }) {
 		return new Promise(async function(resolve, reject) {
-			if (project.active && /Services - 2017-10/i.test(project.name)) {
-				// console.log(`checking ${project.id}`);
+			if (project.active && /Services - 2017-12/i.test(project.name)) {
 				try {
 					let tasks = await sendRequest('GET', {
 						path: `/projects/${project.id}/task_assignments`
@@ -41,7 +38,8 @@ async function callback(projects) {
 						console.log(`${project.id} has less tasks than Template`);
 						await processTasks({
 							new_pid: project.id,
-							tasks: support_tasks
+							tasks: support_tasks,
+							old_project: { client_id: project.client_id }
 						}).catch(errorHandle);
 					}
 
@@ -50,7 +48,8 @@ async function callback(projects) {
 						console.log(`${project.id} has less users than Template`);
 						await processUsers({
 							new_pid: project.id,
-							users: support_users
+							users: support_users,
+							old_project: { client_id: project.client_id }
 						}).catch(errorHandle);
 					}
 

@@ -12,7 +12,7 @@ const createServiceProject = require('../actions/createServiceProject.js'),
 	config = require('../config');
 
 const last_month = moment()
-	.subtract(1, 'months')
+	.subtract(2, 'months')
 	.format('YYYY-MM');
 
 function processProjects(projects) {

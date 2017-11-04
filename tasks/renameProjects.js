@@ -11,7 +11,7 @@ function callback(body) {
 		let PID = project.id;
 		if (
 			PID != config.harvest.default_project &&
-			project.name === 'Services - 2017-11' &&
+			project.name === 'Services - 2017-12' &&
 			!!project.active
 		) {
 			console.log(`${PID} to be renamed.`);
@@ -19,7 +19,7 @@ function callback(body) {
 				path: `/projects/${PID}/`,
 				body: {
 					project: {
-						name: 'Services - 2017-09',
+						name: 'Services - 2017-10',
 						client_id: project.client_id
 					}
 				}
