@@ -12,7 +12,7 @@ const createServiceProject = require('../actions/createServiceProject.js'),
 	config = require('../config');
 
 const last_month = moment()
-	.subtract(2, 'months')
+	.subtract(1, 'months')
 	.format('YYYY-MM');
 
 function processProjects(projects) {
@@ -36,9 +36,7 @@ function processProjects(projects) {
 					new_project.client_id = project.client_id;
 					new_project.name =
 						project.name.match(/(.+)\d{4}\-\d{2}$/)[1] +
-						moment()
-							.add(1, 'months')
-							.format('YYYY-MM');
+						moment().format('YYYY-MM');
 					exists = findProject(projects, project.client_id, new_project.name);
 					if (exists) {
 						log.info(`${project.client_id}: ${pid} new project already exists`);
