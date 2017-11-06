@@ -74,11 +74,7 @@ function processProjects(projects) {
 							new_project.billable = true;
 
 							log.info(
-<<<<<<< Updated upstream
 								`${project.client.name}: ${pid} create new services project`
-=======
-								`${new_project.client.name}: ${pid} create new services project`
->>>>>>> Stashed changes
 							);
 							createServiceProject(new_project, project)
 								.then(resolve)
