@@ -4,7 +4,7 @@ const sendRequest = require('../actions/sendRequest.js'),
 module.exports = function(data) {
 	return new Promise(async function(resolve, reject) {
 		let new_project;
-		log.debug('Create new project');
+		log.info('Create new project');
 		try {
 			new_project = await sendRequest('POST', {
 				path: '/projects',
@@ -25,7 +25,6 @@ module.exports = function(data) {
 		} catch (e) {
 			log.warn(`Failed to get project ${new_project}`);
 		}
-
 		data.new_pid = new_project;
 		resolve(data);
 	});

@@ -6,7 +6,7 @@ module.exports = function(data) {
 		sendRequest('GET', {
 			path: `/projects/${data.old_project.id}/task_assignments`
 		}).then(function(tasks) {
-			log.debug(
+			log.info(
 				`${data.old_project.client_id}: ${data.old_project.id} recieved tasks`
 			);
 			data.tasks = tasks.task_assignments;

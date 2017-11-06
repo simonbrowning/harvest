@@ -116,16 +116,16 @@ function errorHandle(e) {
 		services_project = findProject(
 			projects,
 			findClient('[TEMPLATES]', clients).id,
-			'Services '
+			config.harvest.service_project
 		);
-
+		console.log(services_project);
 		cloneProject(services_project, new_project);
 
 		new_project.name =
 			services_project.name.match(/(.+)\d{4}\-\d{2}$/)[1] +
 			moment().format('YYYY-MM');
 		new_project.client_id = existing_client.id;
-		new_project.active = true;
+		new_project.is_active = true;
 		new_project.notes = `client_hours:${client_object.client_hours ||
 			0};client_bucket:${client_object.client_bucket || 0}`;
 		new_project.estimate =

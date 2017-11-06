@@ -12,13 +12,13 @@ const createServiceProject = require('../actions/createServiceProject.js'),
 	config = require('../config');
 
 const last_month = moment()
-	.subtract(1, 'months')
+	.subtract(2, 'months')
 	.format('YYYY-MM');
 
 function processProjects(projects) {
 	log.info(`projects in response ${projects.length}`);
 	return new Promise(function(resolve, reject) {
-		let promises = projects.map(function({ project }) {
+		let promises = projects.map(function(project) {
 			return new Promise(function(resolve, reject) {
 				let pid,
 					new_project = {},
@@ -28,18 +28,16 @@ function processProjects(projects) {
 				if (
 					_.has(project, 'name') &&
 					project.name.endsWith(last_month) &&
-					project.active
+					project.is_active
 				) {
 					pid = project.id;
 					log.info(`${project.client.name}: ${pid} project to process`);
 					//Set new project name
-					new_project.client_id = project.client_id;
+					new_project.client_id = project.client.id;
 					new_project.name =
 						project.name.match(/(.+)\d{4}\-\d{2}$/)[1] +
-						moment()
-							.add(1, 'months')
-							.format('YYYY-MM');
-					exists = findProject(projects, project.client_id, new_project.name);
+						moment().format('YYYY-MM');
+					exists = findProject(projects, project.client.id, new_project.name);
 					if (exists) {
 						log.info(
 							`${project.client.name}: ${pid} new project already exists`
@@ -49,7 +47,9 @@ function processProjects(projects) {
 						log.info(`${project.client.name}: ${pid} getting hours`);
 						getPreviousHours(project.id, 1, 1).then(function(hours_used) {
 							let hours = getProjectHours(project);
-
+							log.info(
+								`${project.client.name}: ${pid} updating hours for new project`
+							);
 							let excess_hours,
 								remaining_hours,
 								remaining_bucket = /remaining\_bucket\:(\d+)/.test(
@@ -74,7 +74,11 @@ function processProjects(projects) {
 							new_project.billable = true;
 
 							log.info(
+<<<<<<< Updated upstream
+								`${project.client.name}: ${pid} create new services project`
+=======
 								`${new_project.client.name}: ${pid} create new services project`
+>>>>>>> Stashed changes
 							);
 							createServiceProject(new_project, project)
 								.then(resolve)

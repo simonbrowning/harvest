@@ -3,7 +3,7 @@ const sendRequest = require('../actions/sendRequest'),
 
 module.exports = function(item, options) {
 	return new Promise(function(resolve, reject) {
-		console.log(`Getting full list of ${item}`);
+		log.info(`Getting full list of ${item}`);
 		(async function() {
 			let data = [],
 				numOfPages,
@@ -20,12 +20,10 @@ module.exports = function(item, options) {
 					})
 						.then(function(response) {
 							data = data.concat(response[item]);
-							//console.log(page, data.length);
 							resolve();
 						})
 						.catch(function(reason) {
-							//log.error(`Failed to get page ${i} of projects: ${reason}`);
-							console.error(`Failed to get page ${i} of ${item}s: ${reason}`);
+							log.error(`Failed to get page ${i} of projects: ${reason}`);
 							resolve();
 						});
 				});
@@ -40,7 +38,6 @@ module.exports = function(item, options) {
 				}
 				path = `${path}?${query.join('&')}`;
 			}
-			//console.log(``);
 			await sendRequest('GET', {
 				path
 			})
@@ -53,13 +50,12 @@ module.exports = function(item, options) {
 					}
 
 					Promise.all(promises).then(function() {
-						console.log('finished looping, total entries: ', data.length);
+						log.info('finished looping, total entries: ', data.length);
 						resolve(data);
 					});
 				})
 				.catch(function(reason) {
-					// log.error(`Failed to get projects`);
-					console.error(reason);
+					log.error(`Failed to get projects`);
 					reject(reason);
 				});
 		})();

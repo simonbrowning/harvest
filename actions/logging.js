@@ -38,7 +38,7 @@ if (process.env.log) {
 } else {
 	module.exports = {
 		info: function(msg) {},
-		debug: function(msg) {},
+		info: function(msg) {},
 		warn: function(msg) {},
 		error: function(msg) {},
 		close: function() {}

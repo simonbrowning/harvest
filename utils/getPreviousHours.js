@@ -18,7 +18,7 @@ module.exports = function(pid, start, end) {
 			tasks,
 			hours_used = 0;
 		try {
-			log.debug(`${pid} get time report`);
+			log.info(`${pid} get time report`);
 			report = await getPages('time_entries', {
 				project_id: pid,
 				from: start_date,

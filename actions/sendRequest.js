@@ -12,7 +12,7 @@ const sendRequest = function(method, options) {
 	return new Promise(function(resolve, reject) {
 		let response;
 		if (!_.has(options, 'path') || !method) {
-			log.debug('No path / method was set');
+			log.info('No path / method was set');
 		}
 		//Options for reqest
 		const _options = {
@@ -54,12 +54,12 @@ const sendRequest = function(method, options) {
 						cb('success', response.headers.location.match(/\d+$/)[0]); //return resolve(response);
 					} else if (/5\d{2}/.test(response.statusCode)) {
 						if (config.retry.maxRetryies > retry) {
-							log.debug('500 error, retrying');
+							log.info('500 error, retrying');
 							setTimeout(function() {
 								send(options, cb, ++retry);
 							}, Math.floor(config.retry.timeout * (Math.random() * 10)));
 						} else {
-							log.debug('Giving up');
+							log.info('Giving up');
 							cb('failed', data || response.statusMessage);
 						}
 					} else if (/4\d{2}/.test(response.statusCode)) {

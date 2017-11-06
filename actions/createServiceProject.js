@@ -17,8 +17,13 @@ module.exports = function(new_project, old_project) {
 			.then(toggleProject)
 			.then(function(data) {
 				log.info(
+<<<<<<< Updated upstream
 					`${data.new_project.client
 						.name}: ${data.new_pid} finished creating services project`
+=======
+					`${new_project.client
+						.id}: ${data.new_pid} finished creating services project`
+>>>>>>> Stashed changes
 				);
 				resolve(data.new_project);
 			})
