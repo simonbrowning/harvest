@@ -64,7 +64,7 @@ const sendRequest = function(method, options) {
 						}
 					} else if (/4\d{2}/.test(response.statusCode)) {
 						let error = JSON.parse(data);
-						cb('failed', error.error || error.error_description);
+						cb('failed', error.error || error.error_description || error);
 					}
 					if (!/5\d{2}|201|203/.test(response.statusCode)) {
 						cb('success', JSON.parse(data || '{}'));

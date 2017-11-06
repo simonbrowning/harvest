@@ -11,7 +11,9 @@ module.exports = function(data) {
 				form: data.new_project
 			});
 		} catch (e) {
-			log.warn(` failed to create new project: ${e}`);
+			log.warn(
+				`${data.new_project.client_id} failed to create new project: ${e}`
+			);
 			reject(` failed to create new project: ${e}`);
 		}
 		try {

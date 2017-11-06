@@ -13,7 +13,10 @@ module.exports = function(data) {
 			);
 			try {
 				toggle = sendRequest('PATCH', {
-					path: `/projects/${pid}/toggle`
+					path: `/projects/${pid}`,
+					form: {
+						is_active: false
+					}
 				});
 			} catch (e) {
 				reject(`failed to toggle ${pid}`);
