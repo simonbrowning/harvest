@@ -12,9 +12,14 @@ module.exports = function(item, options) {
 
 			function getPage(page) {
 				return new Promise(function(resolve, reject) {
-					if (path.indexOf('?') > -1) {
-						path = `${path}&page=${page}`;
+					if (path.includes('?')) {
+						if (/page\=\d+/.test(path)) {
+							path = path.replace(/page\=\d+/, `page=${page}`);
+						}
+					} else {
+						path = `${path}?page=${page}`;
 					}
+
 					sendRequest('GET', {
 						path
 					})
@@ -23,7 +28,7 @@ module.exports = function(item, options) {
 							resolve();
 						})
 						.catch(function(reason) {
-							log.error(`Failed to get page ${i} of projects: ${reason}`);
+							log.error(`Failed to get page ${i} of ${item}: ${reason}`);
 							resolve();
 						});
 				});
@@ -42,10 +47,10 @@ module.exports = function(item, options) {
 				path
 			})
 				.then(function(response) {
-					numOfPages = response.total_pages + 1;
+					numOfPages = response.total_pages;
 					data = data.concat(response[item]);
 
-					for (let i = 2; i < numOfPages; ++i) {
+					for (let i = 2; i <= numOfPages; ++i) {
 						promises.push(getPage(i));
 					}
 
@@ -55,7 +60,7 @@ module.exports = function(item, options) {
 					});
 				})
 				.catch(function(reason) {
-					log.error(`Failed to get projects`);
+					log.error(`Failed to get ${item}`);
 					reject(reason);
 				});
 		})();

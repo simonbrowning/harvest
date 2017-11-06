@@ -8,7 +8,7 @@ module.exports = function(data) {
 			tasks
 		) {
 			log.info(
-				`${data.new_project.client.name}: ${data.old_project.id} recieved tasks`
+				`${data.new_project.client.name}: ${data.old_project.id} received tasks`
 			);
 			data.tasks = tasks;
 			resolve(data);

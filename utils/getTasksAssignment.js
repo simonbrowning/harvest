@@ -7,7 +7,7 @@ module.exports = function(data) {
 			path: `/projects/${data.old_project.id}/task_assignments`
 		}).then(function(tasks) {
 			log.info(
-				`${data.old_project.client_id}: ${data.old_project.id} recieved tasks`
+				`${data.old_project.client.name}: ${data.old_project.id} received tasks`
 			);
 			data.tasks = tasks.task_assignments;
 			resolve(data);

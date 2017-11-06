@@ -4,7 +4,6 @@ const addUser = require('../utils/addUser.js'),
 
 module.exports = function processUsers(data) {
 	return new Promise(function(resolve, reject) {
-		//console.log('data.users', data.users);
 		let promises = data.users.map(function(user_assignment) {
 			return new Promise(function(resolve, reject) {
 				log.info(
@@ -38,7 +37,7 @@ module.exports = function processUsers(data) {
 									.name} (${uid}) is PM updating...`
 							);
 
-							setPM(data.old_project.client_id, data.new_pid, uid)
+							setPM(data.new_project, uid)
 								.then(function() {
 									return resolve();
 								})

@@ -118,7 +118,7 @@ function errorHandle(e) {
 			findClient('[TEMPLATES]', clients).id,
 			config.harvest.service_project
 		);
-		console.log(services_project);
+
 		cloneProject(services_project, new_project);
 
 		new_project.name =
@@ -134,6 +134,7 @@ function errorHandle(e) {
 		new_project.budget = new_project.estimate;
 		new_project.budget_by = 'project';
 		new_project.billable = true;
+		new_project.notify_when_over_budget = true;
 
 		let client_services_project = await createServiceProject(
 			new_project,
@@ -142,7 +143,7 @@ function errorHandle(e) {
 		log.info(
 			`${client_object.account}: ${client_services_project.name} set PM ${client_object.account_manager}`
 		);
-		let team = await getPages('people').catch(errorHandle);
+		let team = await getPages('users').catch(errorHandle);
 		try {
 			let am = findUser(team, client_object.account_manager).user;
 			let am_uid = await addUser(client_services_project, am.id).catch(
@@ -152,9 +153,7 @@ function errorHandle(e) {
 				`${client_object.account} ${client_services_project.name}:  added ${client_object.account_manager}`
 			);
 			log.info(am_uid);
-			await setPM(existing_client.id, client_services_project, am_uid).catch(
-				errorHandle
-			);
+			await setPM(client_services_project, am_uid).catch(errorHandle);
 		} catch (e) {
 			log.error(
 				`${client_object.account}: ${client_services_project.id} Can't find ${client_object.account_manager}, are they a valid user?`
@@ -200,10 +199,11 @@ function errorHandle(e) {
 					name: client_object.deployment_project,
 					active: true,
 					client_id: existing_client.id,
-					budget_by: 'project_cost',
-					estimate_by: 'project_cost',
+					budget_by: 'project',
+					estimate_by: 'project',
 					billable: true,
-					bill_by: 'People'
+					bill_by: 'People',
+					notify_when_over_budget: true
 				}
 			}).catch(errorHandle);
 

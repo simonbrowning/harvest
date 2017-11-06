@@ -1,5 +1,6 @@
 (async function() {
 	const config = require('../config'),
+		getPages = require('../actions/getPages'),
 		sendRequest = require('../actions/sendRequest'),
 		addUser = require('../utils/addUser.js'),
 		findUser = require('../utils/findUser.js');
@@ -12,7 +13,7 @@
 
 	console.log('getting projects');
 	try {
-		projects = await sendRequest('GET', { path: '/projects' });
+		projects = await getPages('projects');
 	} catch (e) {
 		console.error('failed get projects');
 		process.exit(1);
@@ -20,7 +21,7 @@
 
 	console.log('getting users');
 	try {
-		people = await sendRequest('GET', { path: '/people' });
+		people = await getPages('users');
 	} catch (e) {
 		console.error('failed get users');
 		process.exit(1);

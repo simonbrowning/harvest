@@ -28,7 +28,6 @@ const monthlyRolloverJob = new CronJob(
 );
 
 process.on('SIGINT', () => {
-	console.log('closed');
 	http.kill();
 	process.exit(0);
 });

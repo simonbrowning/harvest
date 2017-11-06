@@ -72,6 +72,7 @@ function processProjects(projects) {
 							new_project.notes = `client_hours:${hours.monthly_hours};client_bucket:${hours.client_bucket};remaining_bucket:${remaining_bucket}`;
 							new_project.budget_by = 'project';
 							new_project.billable = true;
+							new_project.notify_when_over_budget = true;
 
 							log.info(
 								`${project.client.name}: ${pid} create new services project`
