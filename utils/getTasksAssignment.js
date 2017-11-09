@@ -3,6 +3,10 @@ const sendRequest = require('../actions/sendRequest.js'),
 
 module.exports = function(data) {
 	return new Promise(function(resolve, reject) {
+		log.info(
+			`${data.old_project.client.name}: ${data.old_project
+				.id} getting old tasks`
+		);
 		sendRequest('GET', {
 			path: `/projects/${data.old_project.id}/task_assignments`
 		}).then(function(tasks) {

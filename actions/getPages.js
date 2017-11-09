@@ -3,7 +3,6 @@ const sendRequest = require('../actions/sendRequest'),
 
 module.exports = function(item, options) {
 	return new Promise(function(resolve, reject) {
-		log.info(`Getting full list of ${item}`);
 		(async function() {
 			let data = [],
 				numOfPages,
@@ -55,12 +54,13 @@ module.exports = function(item, options) {
 					}
 
 					Promise.all(promises).then(function() {
-						log.info('finished looping, total entries: ', data.length);
 						resolve(data);
 					});
 				})
 				.catch(function(reason) {
-					log.error(`Failed to get ${item}`);
+					log.warn(`Failed to get ${item}`);
+					log.info(reason);
+					log.info(path);
 					reject(reason);
 				});
 		})();

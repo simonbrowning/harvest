@@ -16,6 +16,7 @@ const sendRequest = require('../actions/sendRequest.js'),
 	cloneProject = require('../utils/cloneProject.js'),
 	createProject = require('../utils/createProject.js'),
 	getTasks = require('../utils/getTasksAssignment.js'),
+	getUsers = require('../utils/getUserAssignment.js'),
 	addUser = require('../utils/addUser.js'),
 	addTask = require('../utils/addTask.js'),
 	setPM = require('../utils/setPM.js'),
@@ -106,6 +107,23 @@ function errorHandle(e) {
 		} else {
 			log.info(client_object.account + ': hours are up to date.');
 		}
+		log.info(
+			`${client_object.account}: make sure ${client_object.account_manager} is assigned`
+		);
+		let users;
+		try {
+			users = await getPages('users').catch(errorHandle);
+			let am = findUser(users, client_object.account_manager);
+			let am_uid = await addUser(has_service_project, am.id).catch(errorHandle);
+			await setPM(has_service_project, am_uid.id).catch(errorHandle);
+			log.info(
+				`${client_object.account} ${has_service_project.name}:  added ${client_object.account_manager}`
+			);
+		} catch (e) {
+			log.error(
+				`${client_object.account} ${has_service_project.name}:  failed to add ${client_object.account_manager}: ${e}`
+			);
+		}
 	} else {
 		log.info(client_object.account + ': no services project found.');
 
@@ -138,14 +156,15 @@ function errorHandle(e) {
 
 		let client_services_project = await createServiceProject(
 			new_project,
-			services_project
+			services_project,
+			client_object.account
 		);
 		log.info(
 			`${client_object.account}: ${client_services_project.name} set PM ${client_object.account_manager}`
 		);
 		let team = await getPages('users').catch(errorHandle);
 		try {
-			let am = findUser(team, client_object.account_manager).user;
+			let am = findUser(team, client_object.account_manager);
 			let am_uid = await addUser(client_services_project, am.id).catch(
 				errorHandle
 			);
@@ -153,7 +172,7 @@ function errorHandle(e) {
 				`${client_object.account} ${client_services_project.name}:  added ${client_object.account_manager}`
 			);
 			log.info(am_uid);
-			await setPM(client_services_project, am_uid).catch(errorHandle);
+			await setPM(client_services_project, am_uid.id).catch(errorHandle);
 		} catch (e) {
 			log.error(
 				`${client_object.account}: ${client_services_project.id} Can't find ${client_object.account_manager}, are they a valid user?`
@@ -203,7 +222,13 @@ function errorHandle(e) {
 					estimate_by: 'project',
 					billable: true,
 					bill_by: 'People',
-					notify_when_over_budget: true
+					notify_when_over_budget: true,
+					starts_on: moment()
+						.startOf('month')
+						.format(),
+					ends_on: moment()
+						.endOf('month')
+						.format()
 				}
 			}).catch(errorHandle);
 
@@ -248,7 +273,7 @@ function errorHandle(e) {
 			log.info(`${client_object.account}: ${data.new_pid} setting AM`);
 			let am = {};
 			try {
-				am.user = findUser(people, client_object.account_manager).user;
+				am.user = findUser(people, client_object.account_manager);
 				log.info(
 					`${client_object.account}: ${data.new_pid} found ${client_object.account_manager}`
 				);
@@ -256,7 +281,7 @@ function errorHandle(e) {
 				log.info(
 					`${client_object.account}: ${data.new_pid} setting as PM ${client_object.account_manager} ${am.uid}`
 				);
-				await setPM(data.new_project.client_id, data.new_pid, am.uid).catch(
+				await setPM(data.new_project.client_id, data.new_pid, am.uid.id).catch(
 					errorHandle
 				);
 
@@ -287,7 +312,7 @@ function errorHandle(e) {
 						client_object.territory,
 						'Project Management'
 					]);
-					dm.users.forEach(async function({ user }) {
+					dm.users.forEach(async function(user) {
 						try {
 							log.info(
 								`${client_object.account}: ${data.new_pid} found ${user.first_name} ${user.last_name}`
@@ -296,9 +321,11 @@ function errorHandle(e) {
 							log.info(
 								`${client_object.account}: ${data.new_pid} setting as PM ${user.first_name} ${user.last_name} (${uid})`
 							);
-							await setPM(data.new_project.client_id, data.new_pid, uid).catch(
-								errorHandle
-							);
+							await setPM(
+								data.new_project.client_id,
+								data.new_pid,
+								uid.id
+							).catch(errorHandle);
 							log.info(
 								`${client_object.account}: ${data.new_pid} slacking DM: ${user.first_name} ${user.last_name}`
 							);
@@ -331,7 +358,7 @@ function errorHandle(e) {
 				log.info(`${client_object.account}: ${data.new_pid} setting DE`);
 				let de = {};
 				try {
-					de.user = findUser(people, client_object.deployment_engineer).user;
+					de.user = findUser(people, client_object.deployment_engineer);
 					log.info(
 						`${client_object.account}: ${data.new_pid} found ${client_object.deployment_engineer}`
 					);

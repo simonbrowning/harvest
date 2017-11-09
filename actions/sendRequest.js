@@ -50,24 +50,27 @@ const sendRequest = function(method, options) {
 					data += chunk;
 				})
 				.on('end', function(res) {
-					if (/201|203/.test(response.statusCode)) {
-						cb('success', response.headers.location.match(/\d+$/)[0]); //return resolve(response);
-					} else if (/5\d{2}/.test(response.statusCode)) {
+					// if (/201|203/.test(response.statusCode)) {
+					// 	cb('success', response.headers.location.match(/\d+$/)[0]); //return resolve(response);
+					// } else
+					if (response.statusCode == 429) {
 						if (config.retry.maxRetryies > retry) {
-							log.info('500 error, retrying');
+							log.info('Throttled, retrying');
 							setTimeout(function() {
 								send(options, cb, ++retry);
 							}, Math.floor(config.retry.timeout * (Math.random() * 10)));
 						} else {
 							log.info('Giving up');
-							cb('failed', data || response.statusMessage);
+							return cb('failed', data || response.statusMessage);
 						}
 					} else if (/4\d{2}/.test(response.statusCode)) {
 						let error = JSON.parse(data);
-						cb('failed', error.error || error.error_description || error);
+						return cb('failed', error.error || error.error_description || data);
 					}
-					if (!/5\d{2}|201|203/.test(response.statusCode)) {
-						cb('success', JSON.parse(data || '{}'));
+					if (/2\d{2}/.test(response.statusCode)) {
+						return cb('success', JSON.parse(data || '{}'));
+					} else {
+						return cb('failed', data);
 					}
 				});
 		};

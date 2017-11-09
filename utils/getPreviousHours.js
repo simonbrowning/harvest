@@ -4,7 +4,7 @@ const moment = require('moment'),
 	log = require('../actions/logging.js'),
 	getPages = require('../actions/getPages.js');
 
-module.exports = function(pid, start, end) {
+module.exports = function(project, start, end) {
 	return new Promise(async function(resolve, reject) {
 		let start_date = moment()
 				.subtract(start, 'month')
@@ -18,18 +18,18 @@ module.exports = function(pid, start, end) {
 			tasks,
 			hours_used = 0;
 		try {
-			log.info(`${pid} get time report`);
+			log.info(`${project.client.name} get time report`);
 			report = await getPages('time_entries', {
-				project_id: pid,
+				project_id: project.id,
 				from: start_date,
 				to: end_date
 			});
 		} catch (e) {
-			reject(`failed to get report for ${pid}`);
+			reject(`${project.client.name} failed to get report`);
 		}
 
 		_.each(report, function(entry) {
-			if (entry.billable) {
+			if (entry && entry.billable) {
 				hours_used += entry.hours;
 			}
 		});

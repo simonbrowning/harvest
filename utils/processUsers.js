@@ -11,33 +11,33 @@ module.exports = function processUsers(data) {
 						.name}: ${data.new_pid} adding user ${user_assignment.user.name}`
 				);
 				addUser(data.new_pid, user_assignment.user.id)
-					.then(function(uid) {
+					.then(function(user) {
 						log.info(
 							`${data.new_project.client
 								.name}: ${data.new_pid} user ${user_assignment.user
-								.name} added: ${uid}`
+								.name} added: ${user.id}`
 						);
 
 						log.info(
 							`${data.new_project.client
 								.name}: ${data.new_pid} checking to see if user ${user_assignment
-								.user.name} (${uid}) is a PM`
+								.user.name} (${user.id}) is a PM`
 						);
 						if (!user_assignment.is_project_manager) {
 							log.info(
 								`${data.new_project.client
 									.name}: ${data.new_pid} user ${user_assignment.user
-									.name} (${uid}) not a PM`
+									.name} (${user.id}) not a PM`
 							);
 							resolve();
 						} else {
 							log.info(
 								`${data.new_project.client
 									.name}: ${data.new_pid} user ${user_assignment.user
-									.name} (${uid}) is PM updating...`
+									.name} (${user.id}) is PM updating...`
 							);
 
-							setPM(data.new_project, uid)
+							setPM(data.new_project, user.id)
 								.then(function() {
 									return resolve();
 								})
@@ -45,7 +45,7 @@ module.exports = function processUsers(data) {
 									log.warn(
 										`${data.new_project.client
 											.name}: ${data.new_pid} user ${user_assignment.user
-											.name} (${uid}) failed to set as PM`
+											.name} (${user.id}) failed to set as PM`
 									);
 									console.error(response);
 									return resolve();
@@ -56,10 +56,15 @@ module.exports = function processUsers(data) {
 						log.warn(
 							`${data.new_project.client
 								.name}: ${data.new_pid} user ${user_assignment.user
-								.name} (${uid}) failed add`
+								.name} (${user.id}) failed add`
 						);
 						resolve();
 					});
+			}).catch(function(reason) {
+				log.error(
+					`${data.new_project.client.name} failed add ${user_assignment.user
+						.name}`
+				);
 			});
 		});
 

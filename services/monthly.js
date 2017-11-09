@@ -12,7 +12,7 @@ const createServiceProject = require('../actions/createServiceProject.js'),
 	config = require('../config');
 
 const last_month = moment()
-	.subtract(2, 'months')
+	.subtract(1, 'months')
 	.format('YYYY-MM');
 
 function processProjects(projects) {
@@ -45,7 +45,7 @@ function processProjects(projects) {
 						resolve();
 					} else {
 						log.info(`${project.client.name}: ${pid} getting hours`);
-						getPreviousHours(project.id, 1, 1).then(function(hours_used) {
+						getPreviousHours(project, 1, 1).then(function(hours_used) {
 							let hours = getProjectHours(project);
 							log.info(
 								`${project.client.name}: ${pid} updating hours for new project`
@@ -73,11 +73,17 @@ function processProjects(projects) {
 							new_project.budget_by = 'project';
 							new_project.billable = true;
 							new_project.notify_when_over_budget = true;
+							new_project.starts_on = moment()
+								.startOf('month')
+								.format();
+							new_project.ends_on = moment()
+								.endOf('month')
+								.format();
 
 							log.info(
 								`${project.client.name}: ${pid} create new services project`
 							);
-							createServiceProject(new_project, project)
+							createServiceProject(new_project, project, project.client.name)
 								.then(resolve)
 								.catch(reject);
 						});
@@ -85,6 +91,10 @@ function processProjects(projects) {
 				} else {
 					resolve();
 				}
+			}).catch(function(reason) {
+				log.error(
+					`${project.client.name || 'not availabe'} something failed ${reason}`
+				);
 			});
 		}); //map
 
