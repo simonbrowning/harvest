@@ -14,27 +14,26 @@ module.exports = function processUsers(data) {
 					.then(function(user) {
 						log.info(
 							`${data.new_project.client
-								.name}: ${data.new_pid} user ${user_assignment.user
-								.name} added: ${user.id}`
+								.name}: ${data.new_pid} user ${user_assignment.user.name} added`
 						);
 
 						log.info(
 							`${data.new_project.client
 								.name}: ${data.new_pid} checking to see if user ${user_assignment
-								.user.name} (${user.id}) is a PM`
+								.user.name} is a PM`
 						);
 						if (!user_assignment.is_project_manager) {
 							log.info(
 								`${data.new_project.client
 									.name}: ${data.new_pid} user ${user_assignment.user
-									.name} (${user.id}) not a PM`
+									.name} not a PM`
 							);
 							resolve();
 						} else {
 							log.info(
 								`${data.new_project.client
 									.name}: ${data.new_pid} user ${user_assignment.user
-									.name} (${user.id}) is PM updating...`
+									.name} is PM updating...`
 							);
 
 							setPM(data.new_project, user.id)
@@ -45,7 +44,7 @@ module.exports = function processUsers(data) {
 									log.warn(
 										`${data.new_project.client
 											.name}: ${data.new_pid} user ${user_assignment.user
-											.name} (${user.id}) failed to set as PM`
+											.name} failed to set as PM`
 									);
 									console.error(response);
 									return resolve();
@@ -56,7 +55,7 @@ module.exports = function processUsers(data) {
 						log.warn(
 							`${data.new_project.client
 								.name}: ${data.new_pid} user ${user_assignment.user
-								.name} (${user.id}) failed add`
+								.name} failed add`
 						);
 						resolve();
 					});
