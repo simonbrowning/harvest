@@ -32,6 +32,7 @@ if (process.env.log) {
 			`Unhandled Rejection:
 			${reason.stack}`
 		);
+		process.exit(1);
 	});
 
 	process.on('exit', function() {
