@@ -69,7 +69,9 @@ function processProjects(projects) {
 								remaining_bucket + hours.monthly_hours
 							);
 							new_project.budget = new_project.estimate;
-							new_project.notes = `client_hours:${hours.monthly_hours};client_bucket:${hours.client_bucket};remaining_bucket:${remaining_bucket}`;
+							new_project.notes = `client_hours:${hours.monthly_hours};client_bucket:${hours.client_bucket};remaining_bucket:${remaining_bucket.toFixed(
+								2
+							)}`;
 							new_project.budget_by = 'project';
 							new_project.billable = true;
 							new_project.notify_when_over_budget = true;
