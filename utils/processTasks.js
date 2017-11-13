@@ -5,30 +5,31 @@ module.exports = function proccessTasks(data) {
 	return new Promise(function(resolve, reject) {
 		let promises = data.tasks.map(function(task) {
 			return new Promise(function(resolve, reject) {
-				let tid = task.task.id;
+				let task_name =
+					typeof task.task === 'object' ? task.task.name : task.name;
+				let task_id = typeof task.task === 'object' ? task.task.id : task.id;
 				log.info(
-					`${data.new_project.client.name}: ${data.new_pid} task ${task.task
-						.name} to add`
+					`${data.new_project.client
+						.name}: ${data.new_pid} task ${task_name} to add`
 				);
-				addTask(data.new_pid, tid)
+				addTask(data.new_pid, task_id)
 					.then(function() {
 						log.info(
-							`${data.new_project.client.name}: ${data.new_pid} task ${task.task
-								.name} added`
+							`${data.new_project.client
+								.name}: ${data.new_pid} task ${task_name} added`
 						);
 						resolve();
 					})
 					.catch(function(e) {
 						log.warn(
-							`${data.new_project.client.name}: ${data.new_pid} task ${task.task
-								.name} failed`
+							`${data.new_project.client
+								.name}: ${data.new_pid} task ${task_name} failed`
 						);
 						resolve();
 					});
 			}).catch(function(reason) {
 				log.error(
-					`${data.new_project.client.name} failed to add ${task.task
-						.name}: ${reason}`
+					`${data.new_project.client.name} failed to add task: ${reason}`
 				);
 			});
 		});
