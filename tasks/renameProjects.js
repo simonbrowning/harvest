@@ -12,15 +12,14 @@ function callback(body) {
 		let PID = project.id;
 		if (
 			PID != config.harvest.default_project &&
-			project.name === 'Services - 2017-10' &&
-			!project.is_active
+			project.name === 'Services - 2017-11'
 		) {
 			console.log(`${PID} to be renamed.`);
 			sendRequest('PATCH', {
 				path: `/projects/${PID}/`,
 				form: {
-					// name: 'Services - 2017-10'
-					is_active: true
+					name: 'Services - 2017-08',
+					is_active: false
 				}
 			})
 				.then(function() {
