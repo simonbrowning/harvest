@@ -3,7 +3,7 @@ const sendRequest = require('../actions/sendRequest.js'),
 
 module.exports = function(project, uid) {
 	return new Promise(async function(resolve, reject) {
-		log.info(`${project.client.name}: ${project.id} user ${uid} to set as PM`);
+		log.info(`${project.client.name}: ${project.id} user ${uid} to be PM`);
 		sendRequest('PATCH', {
 			path: `/projects/${project.id}/user_assignments/${uid}`,
 			body: {
