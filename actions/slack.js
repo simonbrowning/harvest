@@ -19,6 +19,7 @@ module.exports = function({ channel, project, client, pid, role }, text) {
 				title: 'HarvestBot',
 				message: text
 			});
+			resolve();
 		} else {
 			if (!text && role) {
 				text = `Just to let you have been added as the ${role} to a new deployment project called <${config
