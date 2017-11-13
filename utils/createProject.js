@@ -10,7 +10,6 @@ module.exports = function(data) {
 				path: '/projects',
 				form: data.new_project
 			});
-			log.info(JSON.stringify(data.new_project));
 			log.info(
 				`${data.client_name}: ${data.new_project
 					.id} new service project created`
