@@ -2,7 +2,6 @@ process.env.log = 'monthly';
 
 const createServiceProject = require('../actions/createServiceProject.js'),
 	getPreviousHours = require('../utils/getPreviousHours.js'),
-	getProjectHours = require('../utils/getProjectHours.js'),
 	getPages = require('../actions/getPages.js'),
 	_ = require('underscore'),
 	moment = require('moment'),
@@ -25,53 +24,45 @@ function processProjects(projects) {
 					new_pid,
 					exists;
 				//Check if project has a date YYYY-MM at the end of the project and is active
-				if (
-					_.has(project, 'name') &&
-					project.name.endsWith(last_month) &&
-					project.is_active
-				) {
+				if (_.has(project, 'name') && project.name.endsWith(last_month) && project.is_active) {
 					pid = project.id;
 					log.info(`${project.client.name}: ${pid} project to process`);
 					//Set new project name
 					new_project.client_id = project.client.id;
-					new_project.name =
-						project.name.match(/(.+)\d{4}\-\d{2}$/)[1] +
-						moment().format('YYYY-MM');
+					new_project.name = project.name.match(/(.+)\d{4}\-\d{2}$/)[1] + moment().format('YYYY-MM');
 					exists = findProject(projects, project.client.id, new_project.name);
 					if (exists) {
-						log.info(
-							`${project.client.name}: ${pid} new project already exists`
-						);
+						log.info(`${project.client.name}: ${pid} new project already exists`);
 						resolve();
 					} else {
 						log.info(`${project.client.name}: ${pid} getting hours`);
 						getPreviousHours(project, 1, 1).then(function(hours_used) {
-							let hours = getProjectHours(project);
-							log.info(
-								`${project.client.name}: ${pid} updating hours for new project`
-							);
-							let excess_hours,
-								remaining_hours,
-								remaining_bucket = /remaining\_bucket\:(\d+)/.test(
-									project.notes
-								)
-									? parseInt(project.notes.match(/remaining\_bucket\:(\d+)/)[1])
-									: null;
-							if (hours_used > hours.monthly_hours) {
-								excess_hours = hours_used - hours.monthly_hours;
-								remaining_hours =
-									(remaining_bucket || hours.client_bucket) - excess_hours;
-								remaining_bucket = remaining_hours < 0 ? 0 : remaining_hours;
-							} else {
-								remaining_bucket = remaining_bucket || hours.client_bucket;
+							log.info(`${project.client.name}: ${pid} updating hours for new project`);
+							try {
+								let excess_hours,
+									remaining_hours,
+									remaining_bucket = hours.remaining_bucket || 0,
+									hours = JSON.parse(project.notes);
+
+								if (hours_used > hours.client_hours) {
+									excess_hours = hours_used - hours.client_hours;
+									remaining_hours = (remaining_bucket || hours.client_bucket) - excess_hours;
+									remaining_bucket = remaining_hours < 0 ? 0 : remaining_hours;
+								} else {
+									remaining_bucket = remaining_bucket || hours.client_bucket;
+								}
+								new_project.estimate = parseInt(remaining_bucket + hours.monthly_hours);
+								new_project.budget = new_project.estimate;
+								new_project.notes = JSON.stringify({
+									client_hours: hours.client_hours,
+									client_bucket: hours.client_bucket,
+									remaining_bucket: remaining_bucket.toFixed(2),
+									account_manager: client_object.account_manager
+								});
+							} catch (e) {
+								log.error(`${project.client.name}: ${pid} failed to update hours`);
 							}
-							new_project.estimate = parseInt(
-								remaining_bucket + hours.monthly_hours
-							);
-							new_project.budget = new_project.estimate;
-							new_project.notes = `client_hours:${hours.monthly_hours};client_bucket:${hours.client_bucket};remaining_bucket:${remaining_bucket.toFixed(
-								2
-							)}`;
+
 							new_project.budget_by = 'project';
 							new_project.billable = true;
 							new_project.notify_when_over_budget = true;
@@ -82,9 +73,7 @@ function processProjects(projects) {
 								.endOf('month')
 								.format();
 
-							log.info(
-								`${project.client.name}: ${pid} create new services project`
-							);
+							log.info(`${project.client.name}: ${pid} create new services project`);
 							createServiceProject(new_project, project, project.client.name)
 								.then(resolve)
 								.catch(reject);
@@ -94,9 +83,7 @@ function processProjects(projects) {
 					resolve();
 				}
 			}).catch(function(reason) {
-				log.error(
-					`${project.client.name || 'not availabe'} something failed ${reason}`
-				);
+				log.error(`${project.client.name || 'not availabe'} something failed ${reason}`);
 			});
 		}); //map
 

@@ -12,7 +12,6 @@ const sendRequest = require('../actions/sendRequest.js'),
 	findProject = require('../utils/findProject.js'),
 	findUser = require('../utils/findUser.js'),
 	findTasks = require('../utils/findTask.js'),
-	getProjectHours = require('../utils/getProjectHours.js'),
 	cloneProject = require('../utils/cloneProject.js'),
 	createProject = require('../utils/createProject.js'),
 	getTasks = require('../utils/getTasksAssignment.js'),
@@ -47,13 +46,9 @@ async function start(args) {
 	am.user = findUser(users, client_object.account_manager);
 	log.info(am.user);
 	if (am.user) {
-		log.info(
-			`${client_object.account}: found ${client_object.account_manager}`
-		);
+		log.info(`${client_object.account}: found ${client_object.account_manager}`);
 	} else {
-		log.error(
-			`${client_object.account}: are ${client_object.account_manager} in Harvest?`
-		);
+		log.error(`${client_object.account}: are ${client_object.account_manager} in Harvest?`);
 	}
 
 	log.info(`${client_object.account}: seeing if client exists`);
@@ -89,28 +84,29 @@ async function start(args) {
 		log.info(`${client_object.account}: checking hours`);
 		let update_notes = false;
 		let project = {};
-		let hours = getProjectHours(service_project);
-		//TODO: make into module
-		if (hours.monthly_hours != parseInt(client_object.client_hours)) {
-			hours.monthly_hours = parseInt(client_object.client_hours);
-			project.estimate =
-				hours.monthly_hours + parseInt(client_object.client_bucket);
-			project.budget = project.estimate;
-			update_notes = true;
-		}
-		if (
-			client_object.client_bucket &&
-			hours.client_bucket != parseInt(client_object.client_bucket)
-		) {
-			hours.client_bucket = parseInt(client_object.client_bucket);
-			update_notes = true;
-		}
-		//TODO: set AM
-		if (update_notes) {
-			log.info(`${client_object.account}: updating hours`);
+		try {
+			let hours = JSON.parse(service_project);
 
-			(project.client_id = service_project.client_id),
-				(project.notes = `client_hours:${hours.monthly_hours};client_bucket:${hours.client_bucket};account_manager:${client_object.account_manager}`),
+			if (client_object.client_bucket && hours.client_bucket != parseInt(client_object.client_bucket)) {
+				hours.client_bucket = parseInt(client_object.client_bucket);
+				update_notes = true;
+			}
+
+			if (hours.client_hours != parseInt(client_object.client_hours)) {
+				hours.client_hours = parseInt(client_object.client_hours);
+				project.estimate = hours.client_hours + parseInt(client_object.client_bucket);
+				project.budget = project.estimate;
+				update_notes = true;
+			}
+			if (update_notes) {
+				log.info(`${client_object.account}: updating hours`);
+
+				project.client_id = service_project.client_id;
+				project.notes = JSON.stringify({
+					client_hours: hours.client_hours,
+					client_bucket: hours.client_bucket,
+					account_manager: client_object.account_manager
+				});
 				await sendRequest('PATCH', {
 					path: `/projects/${service_project.id}`,
 					form: {
@@ -118,33 +114,30 @@ async function start(args) {
 					}
 				}).catch(errorHandle);
 
-			log.info(`${client_object.account}: hours updated`);
-
-			await slack({
-				channel:
-					'@' + client_object.account_manager.replace(' ', '.').toLowerCase(),
-				client: client_object.account
-			});
-		} else {
-			log.info(`${client_object.account}: hours are up to update`);
+				log.info(`${client_object.account}: hours updated`);
+				await slack({
+					channel: '@' + client_object.account_manager.replace(' ', '.').toLowerCase(),
+					client: client_object.account
+				});
+			} else {
+				log.info(`${client_object.account}: hours are up to update`);
+			}
+		} catch (e) {
+			log.error(`${client_object.account}: couldn't update hours`);
 		}
 
 		if (am.user) {
-			log.info(
-				`${client_object.account}: make sure ${client_object.account_manager} is assigned`
-			);
+			log.info(`${client_object.account}: make sure ${client_object.account_manager} is assigned`);
 
 			try {
-				am.uid = await addUser(service_project.id, am.user.id).catch(
-					errorHandle
-				);
+				am.uid = await addUser(service_project.id, am.user.id).catch(errorHandle);
 				await setPM(service_project, am.uid).catch(errorHandle);
-				log.info(
-					`${client_object.account} ${service_project.name}:  added ${client_object.account_manager}`
-				);
+				log.info(`${client_object.account} ${service_project.name}:  added ${client_object.account_manager}`);
 			} catch (e) {
 				log.error(
-					`${client_object.account} ${service_project.name}:  failed to add ${client_object.account_manager}: ${e}`
+					`${client_object.account} ${service_project.name}:  failed to add ${
+						client_object.account_manager
+					}: ${e}`
 				);
 			}
 		}
@@ -163,17 +156,13 @@ async function start(args) {
 
 		cloneProject(services_project, new_project);
 
-		new_project.name =
-			services_project.name.match(/(.+)\d{4}\-\d{2}$/)[1] +
-			moment().format('YYYY-MM');
+		new_project.name = services_project.name.match(/(.+)\d{4}\-\d{2}$/)[1] + moment().format('YYYY-MM');
 		new_project.client_id = client.id;
 		new_project.is_active = true;
 		new_project.notes = `client_hours:${client_object.client_hours ||
-			0};client_bucket:${client_object.client_bucket ||
-			0};account_manager:${client_object.account_manager}`;
+			0};client_bucket:${client_object.client_bucket || 0};account_manager:${client_object.account_manager}`;
 		new_project.estimate =
-			parseInt(client_object.client_hours || '0') +
-			parseInt(client_object.client_bucket || '0');
+			parseInt(client_object.client_hours || '0') + parseInt(client_object.client_bucket || '0');
 		new_project.budget = new_project.estimate;
 		new_project.budget_by = 'project';
 		new_project.billable = true;
@@ -190,29 +179,28 @@ async function start(args) {
 			);
 			try {
 				log.info(client_services_project.id, am.user.id);
-				am.uid = await addUser(client_services_project.id, am.user.id).catch(
-					errorHandle
-				);
+				am.uid = await addUser(client_services_project.id, am.user.id).catch(errorHandle);
 				if (am.uid) {
 					log.info(
-						`${client_object.account} ${client_services_project.id}: added ${client_object.account_manager} now make them a PM`
+						`${client_object.account} ${client_services_project.id}: added ${
+							client_object.account_manager
+						} now make them a PM`
 					);
 					await setPM(client_services_project, am.uid.id).catch(errorHandle);
 				}
 			} catch (e) {
 				log.error(
-					`${client_object.account}: ${client_services_project.id} failed to add ${client_object.account_manager}`
+					`${client_object.account}: ${client_services_project.id} failed to add ${
+						client_object.account_manager
+					}`
 				);
 			}
 		}
 
-		log.info(
-			`${client_object.account} ${client_services_project.id}:  service project created`
-		);
+		log.info(`${client_object.account} ${client_services_project.id}:  service project created`);
 		await slack(
 			{
-				channel:
-					'@' + client_object.account_manager.replace(' ', '.').toLowerCase(),
+				channel: '@' + client_object.account_manager.replace(' ', '.').toLowerCase(),
 				client: client_object.account
 			},
 			`${client_object.account} has been created in Harvest.`
@@ -221,18 +209,10 @@ async function start(args) {
 
 	//run through deployment project
 	if (!client_object.deployment_project) {
-		log.info(
-			`${client_object.account}: no deployment project, account update only`
-		);
+		log.info(`${client_object.account}: no deployment project, account update only`);
 	} else {
-		log.info(
-			`${client_object.account}: seeing if deployment project already exists`
-		);
-		let deployment_project = findProject(
-			projects,
-			client.id,
-			client_object.deployment_project
-		);
+		log.info(`${client_object.account}: seeing if deployment project already exists`);
+		let deployment_project = findProject(projects, client.id, client_object.deployment_project);
 
 		if (deployment_project) {
 			log.info(
@@ -257,8 +237,7 @@ async function start(args) {
 			}).catch(errorHandle);
 
 			log.info(
-				`${client_object.account}: ${data.new_project
-					.name} - ${data.new_pid} created deployment project`
+				`${client_object.account}: ${data.new_project.name} - ${data.new_pid} created deployment project`
 			);
 
 			log.info(`${client_object.account}: ${data.new_pid} getting tasks`);
@@ -275,18 +254,11 @@ async function start(args) {
 					} else if (client_object.type === 'EventStream') {
 						log.info(`${client_object.account}: ${data.new_pid} ES deployment`);
 						filteredTasks = findTasks(tasks, 'es');
-						//TODO: add mobile option with iQ and ES options
 					} else if (client_object.type === 'Web') {
 						log.info(`${client_object.account}: ${data.new_pid} iQ deployment`);
 						filteredTasks = findTasks(tasks, 'iQ');
-					} else if (
-						/android|ios|mobile web|blackberry|windows/i.test(
-							client_object.type
-						)
-					) {
-						log.info(
-							`${client_object.account}: ${data.new_pid} mobile deployment`
-						);
+					} else if (/android|ios|mobile web|blackberry|windows/i.test(client_object.type)) {
+						log.info(`${client_object.account}: ${data.new_pid} mobile deployment`);
 						let iq_tasks = findTasks(tasks, 'iQ');
 						let es_tasks = findTasks(tasks, 'es');
 						filteredTasks = iq_tasks.concat(es_tasks);
@@ -302,9 +274,7 @@ async function start(args) {
 							new_project: data.new_project
 						});
 					} else {
-						log.warn(
-							`${client_object.account}: ${data.new_pid} no tasks added`
-						);
+						log.warn(`${client_object.account}: ${data.new_pid} no tasks added`);
 					}
 				}
 			}
@@ -312,14 +282,14 @@ async function start(args) {
 			log.info(`${client_object.account}: ${data.new_pid} adding users`);
 
 			if (am.user) {
-				log.info(
-					`${client_object.account}: ${data.new_pid} add AM: ${client_object.account_manager}`
-				);
+				log.info(`${client_object.account}: ${data.new_pid} add AM: ${client_object.account_manager}`);
 				try {
 					am.uid = await addUser(data.new_pid, am.user.id).catch(errorHandle);
 					if (am.uid) {
 						log.info(
-							`${client_object.account} ${data.new_pid}: added ${client_object.account_manager} now make them a PM`
+							`${client_object.account} ${data.new_pid}: added ${
+								client_object.account_manager
+							} now make them a PM`
 						);
 						await setPM(data.new_project, am.uid.id).catch(errorHandle);
 					}
@@ -329,13 +299,10 @@ async function start(args) {
 					);
 				}
 
-				log.info(
-					`${client_object.account}: ${data.new_pid} slacking AM: ${client_object.account_manager}`
-				);
+				log.info(`${client_object.account}: ${data.new_pid} slacking AM: ${client_object.account_manager}`);
 
 				await slack({
-					channel:
-						'@' + client_object.account_manager.replace(' ', '.').toLowerCase(),
+					channel: '@' + client_object.account_manager.replace(' ', '.').toLowerCase(),
 					client: client_object.account,
 					project: client_object.deployment_project,
 					pid: data.new_pid,
@@ -346,10 +313,7 @@ async function start(args) {
 			// //Deployment Manager
 			log.info(`${client_object.account}: ${data.new_pid} setting DM`);
 			let dm = {};
-			if (
-				client_object.account_manager !== client_object.deployment_manager &&
-				client_object.territory
-			) {
+			if (client_object.account_manager !== client_object.deployment_manager && client_object.territory) {
 				try {
 					dm.users = findUser(users, client_object.deployment_manager, [
 						client_object.territory,
@@ -376,31 +340,27 @@ async function start(args) {
 								role: 'Deployment Manager'
 							}).catch(errorHandle);
 						} catch (e) {
-							log.error(
-								`failed to add DM: ${user.first_name} ${user.last_name} - ${e}`
-							);
+							log.error(`failed to add DM: ${user.first_name} ${user.last_name} - ${e}`);
 						}
 					});
 				} catch (e) {
 					log.error(
-						`${client_object.account}: ${data.new_pid} Can't find ${client_object.deployment_manager}, are they a valid user?`
+						`${client_object.account}: ${data.new_pid} Can't find ${
+							client_object.deployment_manager
+						}, are they a valid user?`
 					);
 				}
 			}
 
 			//Deployment Enigneer
 			if (client_object.deployment_engineer == 'Partner/Agency') {
-				log.info(
-					`${client_object.account}: ${data.new_pid} Partner/Agency set, ingoring`
-				);
+				log.info(`${client_object.account}: ${data.new_pid} Partner/Agency set, ingoring`);
 			} else {
 				log.info(`${client_object.account}: ${data.new_pid} setting DE`);
 				let de = {};
 				try {
 					de.user = findUser(users, client_object.deployment_engineer);
-					log.info(
-						`${client_object.account}: ${data.new_pid} found ${client_object.deployment_engineer}`
-					);
+					log.info(`${client_object.account}: ${data.new_pid} found ${client_object.deployment_engineer}`);
 					de.uid = await addUser(data.new_pid, de.user.id).catch(errorHandle);
 
 					log.info(
@@ -408,9 +368,7 @@ async function start(args) {
 					);
 
 					await slack({
-						channel:
-							'@' +
-							client_object.deployment_engineer.replace(' ', '.').toLowerCase(),
+						channel: '@' + client_object.deployment_engineer.replace(' ', '.').toLowerCase(),
 						client: client_object.account,
 						project: client_object.deployment_project,
 						pid: data.new_pid,
@@ -418,7 +376,9 @@ async function start(args) {
 					}).catch(errorHandle);
 				} catch (e) {
 					log.error(
-						`${client_object.account}: ${data.new_pid} Can't find ${client_object.deployment_engineer}, are they a valid user?`
+						`${client_object.account}: ${data.new_pid} Can't find ${
+							client_object.deployment_engineer
+						}, are they a valid user?`
 					);
 				}
 			}
