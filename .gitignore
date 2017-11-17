@@ -3,4 +3,3 @@
 /config/prod.js
 .DS_Store
 /logs
-harvest-pm2-dev.json
