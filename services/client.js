@@ -131,7 +131,7 @@ async function start(args) {
 
 			try {
 				am.uid = await addUser(service_project.id, am.user.id).catch(errorHandle);
-				await setPM(service_project, am.uid).catch(errorHandle);
+				await setPM(service_project, am.uid.id).catch(errorHandle);
 				log.info(`${client_object.account} ${service_project.name}:  added ${client_object.account_manager}`);
 			} catch (e) {
 				log.error(
@@ -159,8 +159,11 @@ async function start(args) {
 		new_project.name = services_project.name.match(/(.+)\d{4}\-\d{2}$/)[1] + moment().format('YYYY-MM');
 		new_project.client_id = client.id;
 		new_project.is_active = true;
-		new_project.notes = `client_hours:${client_object.client_hours ||
-			0};client_bucket:${client_object.client_bucket || 0};account_manager:${client_object.account_manager}`;
+		new_project.notes = JSON.stringify({
+			client_hours: client_object.client_hours,
+			client_bucket: client_object.client_hours,
+			account_manager: client_object.account_manager
+		});
 		new_project.estimate =
 			parseInt(client_object.client_hours || '0') + parseInt(client_object.client_bucket || '0');
 		new_project.budget = new_project.estimate;
