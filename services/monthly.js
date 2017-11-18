@@ -40,27 +40,30 @@ function processProjects(projects) {
 							log.info(`${project.client.name}: ${pid} updating hours for new project`);
 							try {
 								let excess_hours,
-									remaining_hours,
-									remaining_bucket = hours.remaining_bucket || 0,
-									hours = JSON.parse(project.notes);
+									notes = JSON.parse(project.notes);
 
-								if (hours_used > hours.client_hours) {
-									excess_hours = hours_used - hours.client_hours;
-									remaining_hours = (remaining_bucket || hours.client_bucket) - excess_hours;
+								let remaining_bucket = parseInt(notes.remaining_bucket) || 0,
+									client_hours = parseInt(notes.client_hours),
+									client_bucket = parseInt(notes.client_bucket);
+
+								if (hours_used > client_hours) {
+									excess_hours = hours_used - client_hours;
+									remaining_hours = (remaining_bucket || client_bucket) - excess_hours;
 									remaining_bucket = remaining_hours < 0 ? 0 : remaining_hours;
 								} else {
-									remaining_bucket = remaining_bucket || hours.client_bucket;
+									remaining_bucket = remaining_bucket || client_bucket;
 								}
-								new_project.estimate = parseInt(remaining_bucket + hours.monthly_hours);
+								new_project.estimate = parseInt(remaining_bucket + client_hours);
+								log.info(`${project.client.name}: ${pid} new estimate ${new_project.estimate}`);
 								new_project.budget = new_project.estimate;
 								new_project.notes = JSON.stringify({
-									client_hours: hours.client_hours,
-									client_bucket: hours.client_bucket,
+									client_hours: notes.client_hours,
+									client_bucket: notes.client_bucket,
 									remaining_bucket: remaining_bucket.toFixed(2),
-									account_manager: client_object.account_manager
+									account_manager: notes.account_manager
 								});
 							} catch (e) {
-								log.error(`${project.client.name}: ${pid} failed to update hours`);
+								log.error(`${project.client.name}: ${pid} failed to update hours: ${e}`);
 							}
 
 							new_project.budget_by = 'project';
