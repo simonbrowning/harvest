@@ -75,7 +75,7 @@ async function start(args) {
 	let service_project = findProject(
 		projects,
 		client.id,
-		config.harvest.service_project + moment().format('YYYY-MM')
+		config.harvestv2.service_project + moment().format('YYYY-MM')
 	);
 
 	if (service_project) {
@@ -85,33 +85,36 @@ async function start(args) {
 		let update_notes = false;
 		let project = {};
 		try {
-			let hours = JSON.parse(service_project);
+			let hours = JSON.parse(service_project.notes);
 
-			if (client_object.client_bucket && hours.client_bucket != parseInt(client_object.client_bucket)) {
+			if (
+				client_object.client_bucket &&
+				parseInt(hours.client_bucket) != parseInt(client_object.client_bucket)
+			) {
 				hours.client_bucket = parseInt(client_object.client_bucket);
+
 				update_notes = true;
 			}
 
-			if (hours.client_hours != parseInt(client_object.client_hours)) {
+			if (parseInt(hours.client_hours) != parseInt(client_object.client_hours)) {
 				hours.client_hours = parseInt(client_object.client_hours);
-				project.estimate = hours.client_hours + parseInt(client_object.client_bucket);
-				project.budget = project.estimate;
 				update_notes = true;
 			}
 			if (update_notes) {
+				project.estimate = parseInt(hours.client_hours) + parseInt(client_object.client_bucket);
+				project.budget = project.estimate;
 				log.info(`${client_object.account}: updating hours`);
 
-				project.client_id = service_project.client_id;
+				//project.client_id = service_project.client_id;
 				project.notes = JSON.stringify({
 					client_hours: hours.client_hours,
 					client_bucket: hours.client_bucket,
 					account_manager: client_object.account_manager
 				});
+
 				await sendRequest('PATCH', {
 					path: `/projects/${service_project.id}`,
-					form: {
-						project
-					}
+					form: project
 				}).catch(errorHandle);
 
 				log.info(`${client_object.account}: hours updated`);
@@ -156,7 +159,7 @@ async function start(args) {
 
 		cloneProject(services_project, new_project);
 
-		new_project.name = services_project.name.match(/(.+)\d{4}\-\d{2}$/)[1] + moment().format('YYYY-MM');
+		new_project.name = config.harvestv2.service_project + moment().format('YYYY-MM');
 		new_project.client_id = client.id;
 		new_project.is_active = true;
 		new_project.notes = JSON.stringify({

@@ -12,7 +12,7 @@ function callback(body) {
 		if (
 			PID != config.harvest.default_project &&
 			/^Services/.test(project.name) &&
-			project.name == 'Services - 2017-11'
+			project.name == 'Services 2017-11'
 		) {
 			console.log(`${PID} to be deleted.`);
 			sendRequest('DELETE', { path: `/projects/${PID}/` })
