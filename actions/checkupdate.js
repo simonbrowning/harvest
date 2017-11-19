@@ -5,6 +5,7 @@ const config = require('../config'),
 	getUserAssignment = require('../utils/getUserAssignment'),
 	processTasks = require('../utils/processTasks'),
 	processUsers = require('../utils/processUsers'),
+	toggleProject = require('../utils/toggleProject'),
 	log = require('../actions/logging.js'),
 	moment = require('moment');
 
@@ -63,7 +64,7 @@ module.exports = function() {
 									support_users.forEach(function(user) {
 										if (user.user.id == id) {
 											log.info(`${project.client.name}: ${project.id} user to add: ${user.user.name}`);
-											users_to_update.push(task);
+											users_to_update.push(user);
 										}
 									});
 								}
@@ -115,6 +116,16 @@ module.exports = function() {
 							reject(e);
 						}
 					} else {
+						if (
+							project.name ==
+								config.harvestv2.service_project +
+									moment()
+										.subtract(1, 'months')
+										.format('YYYY-MM') &&
+							project.is_active
+						) {
+							await toggleProject({ old_project: project, new_project: project });
+						}
 						resolve();
 					}
 				});
@@ -122,7 +133,6 @@ module.exports = function() {
 
 			Promise.all(promises)
 				.then(function() {
-					log.info('complete');
 					return resolve();
 				})
 				.catch(function(reason) {
