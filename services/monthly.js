@@ -6,26 +6,42 @@ const createServiceProject = require('../actions/createServiceProject.js'),
 	_ = require('underscore'),
 	moment = require('moment'),
 	findProject = require('../utils/findProject'),
+	findUser = require('../utils/findUser'),
+	addUser = require('../utils/addUser'),
+	setPM = require('../utils/setPM'),
 	log = require('../actions/logging.js'),
 	slack = require('../actions/slack.js'),
+	cleanUp = require('../actions/checkupdate.js'),
 	config = require('../config');
 
 const last_month = moment()
 	.subtract(1, 'months')
 	.format('YYYY-MM');
 
+function errorHandle(e) {
+	log.warn(`caught rejection: ${e}`);
+	return null;
+}
+
 function processProjects(projects) {
 	log.info(`projects in response ${projects.length}`);
 	return new Promise(function(resolve, reject) {
 		let promises = projects.map(function(project) {
 			return new Promise(function(resolve, reject) {
-				let pid,
-					new_project = {},
-					new_pid,
-					exists;
 				//Check if project has a date YYYY-MM at the end of the project and is active
-				if (_.has(project, 'name') && project.name.endsWith(last_month) && project.is_active) {
-					pid = project.id;
+				//if (_.has(project, 'name') && project.name.endsWith(last_month) && project.is_active) {
+
+				if (
+					_.has(project, 'name') &&
+					project.name == config.harvestv2.service_project + last_month &&
+					project.is_active
+				) {
+					let pid = project.id,
+						new_project = {},
+						new_pid,
+						exists,
+						notes = JSON.parse(project.notes);
+
 					log.info(`${project.client.name}: ${pid} project to process`);
 					//Set new project name
 					new_project.client_id = project.client.id;
@@ -39,9 +55,7 @@ function processProjects(projects) {
 						getPreviousHours(project, 1, 1).then(function(hours_used) {
 							log.info(`${project.client.name}: ${pid} updating hours for new project`);
 							try {
-								let excess_hours,
-									notes = JSON.parse(project.notes);
-
+								let excess_hours;
 								let remaining_bucket = parseInt(notes.remaining_bucket) || 0,
 									client_hours = parseInt(notes.client_hours),
 									client_bucket = parseInt(notes.client_bucket);
@@ -78,7 +92,22 @@ function processProjects(projects) {
 
 							log.info(`${project.client.name}: ${pid} create new services project`);
 							createServiceProject(new_project, project, project.client.name)
-								.then(resolve)
+								.then(async function(project) {
+									if (notes.account_manager) {
+										log.info(`${project.client.name}: ${project.id} make sure Account Manager is set`);
+										let users = await getPages('users');
+										let am = {};
+										am.user = findUser(users, notes.account_manager);
+										am.uid = await addUser(project.id, am.user.id).catch(errorHandle);
+										await setPM(project, am.uid.id).catch(errorHandle);
+										log.info(
+											`${client_object.account} ${project.name}:  added ${client_object.account_manager}`
+										);
+									} else {
+										log.error(`${project.client.name}: ${project.id} no Account Manager set`);
+									}
+									resolve();
+								})
 								.catch(reject);
 						});
 					}
@@ -91,7 +120,10 @@ function processProjects(projects) {
 		}); //map
 
 		Promise.all(promises)
-			.then(function() {
+			.then(async function() {
+				log.info('Starting CleanUp');
+				await cleanUp();
+				log.info('Finished CleanUp');
 				log.close();
 				return resolve();
 			})
