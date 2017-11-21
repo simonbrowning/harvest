@@ -10,9 +10,10 @@ function callback(body) {
 	body.forEach(function(project) {
 		let PID = project.id;
 		if (
-			PID != config.harvest.default_project &&
-			/^Services/.test(project.name) &&
-			project.name == 'Services 2017-11'
+			PID != config.harvest.default_project
+			//  &&
+			// /^Services/.test(project.name) &&
+			// project.name == 'Services 2017-11'
 		) {
 			console.log(`${PID} to be deleted.`);
 			sendRequest('DELETE', { path: `/projects/${PID}/` })

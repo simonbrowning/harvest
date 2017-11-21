@@ -10,20 +10,28 @@ function callback(body) {
 	//var projects = JSON.parse(body);
 	body.forEach(function(project) {
 		let PID = project.id;
-		if (PID != config.harvest.default_project && project.name === 'Services - 2017-10') {
+		if (PID != config.harvest.default_project && project.name === 'Services - 2017-11') {
 			console.log(`${PID} to be updated.`);
-			sendRequest('PATCH', {
-				path: `/projects/${PID}/`,
-				form: {
-					notes: `{${project.notes.replace(/\;/g, ',').replace(/([a-z_]+)/g, '"$1"')}}`
-				}
-			})
-				.then(function() {
-					console.log(`${PID} updated.`);
+
+			let notes = `{${project.notes.replace(/\;/g, ',').replace(/([A-z_ ]+)/g, '"$1"')}}`;
+			try {
+				JSON.parse(notes);
+
+				sendRequest('PATCH', {
+					path: `/projects/${PID}/`,
+					form: {
+						notes: notes
+					}
 				})
-				.catch(function(reason) {
-					console.log(`${PID} failed, ${reason}`);
-				});
+					.then(function() {
+						console.log(`${PID} updated.`);
+					})
+					.catch(function(reason) {
+						console.log(`${PID} failed, ${reason}`);
+					});
+			} catch (e) {
+				console.log(`${project.cleint.name} failed to parse notes skipping: ${e}`);
+			}
 		}
 	});
 }
