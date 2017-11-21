@@ -98,13 +98,20 @@ function processProjects(projects) {
 										let users = await getPages('users');
 										let am = {};
 										am.user = findUser(users, notes.account_manager);
-										am.uid = await addUser(project.id, am.user.id).catch(errorHandle);
-										await setPM(project, am.uid.id).catch(errorHandle);
-										log.info(
-											`${client_object.account} ${project.name}:  added ${client_object.account_manager}`
-										);
+										if (am.user) {
+											am.uid = await addUser(project.id, am.user.id).catch(errorHandle);
+											await setPM(project, am.uid.id).catch(errorHandle);
+											log.info(
+												`${client_object.account} ${project.name}:  added ${client_object.account_manager}`
+											);
+										} else {
+											log.error(
+												`${project.client.name}: ${project.id} no Account Manager ${
+													notes.account_manager
+												} not found`
+											);
+										}
 									} else {
-										log.error(`${project.client.name}: ${project.id} no Account Manager set`);
 									}
 									resolve();
 								})
