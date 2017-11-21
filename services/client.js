@@ -293,7 +293,7 @@ async function start(args) {
 					am.uid = await addUser(data.new_pid, am.user.id).catch(errorHandle);
 					if (am.uid) {
 						log.info(
-							`${client_object.account} ${data.new_pid}: added ${
+							`${client_object.account}: ${data.new_pid} added ${
 								client_object.account_manager
 							} now make them a PM`
 						);
