@@ -1,6 +1,5 @@
 const request = require('request'),
-	config = require('../config'),
-	notifier = require('node-notifier');
+	config = require('../config');
 
 let options = {
 	method: 'POST',
@@ -14,13 +13,6 @@ let options = {
 
 module.exports = function({ channel, project, client, pid, role }, text) {
 	return new Promise(function(resolve, reject) {
-		if (process.env.ENV_VARIABLE !== 'production') {
-			notifier.notify({
-				title: 'HarvestBot',
-				message: text
-			});
-			resolve();
-		} else {
 			if (!text && role) {
 				text = `Just to let you have been added as the ${role} to a new deployment project called <${config
 					.harvest
@@ -45,6 +37,5 @@ module.exports = function({ channel, project, client, pid, role }, text) {
 					resolve();
 				}
 			});
-		}
 	});
 };
