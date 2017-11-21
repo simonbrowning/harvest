@@ -7,14 +7,10 @@ module.exports = function(pid, task) {
 		try {
 			new_task = await sendRequest('POST', {
 				path: `/projects/${pid}/task_assignments`,
-				body: {
-					task: {
-						id: task
-					}
-				}
+				form: { task_id: task }
 			});
 		} catch (e) {
-			reject('failed to create task');
+			reject('failed to add task');
 		}
 		let tid = new_task;
 		resolve(tid);

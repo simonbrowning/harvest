@@ -8,16 +8,29 @@ module.exports = function(data) {
 			pid = data.old_project.id;
 		if (config.harvest.default_project !== pid) {
 			log.info(
-				`${data.old_project.client_id}: ${data.old_project
+				`${data.new_project.client.name}: ${data.old_project
 					.id} deactivating project`
 			);
 			try {
-				toggle = sendRequest('PUT', {
-					path: `/projects/${pid}/toggle`
+				toggle = await sendRequest('PATCH', {
+					path: `/projects/${pid}`,
+					form: {
+						is_active: false
+					}
 				});
+
+				log.info(
+					`${data.new_project.client.name}: ${data.old_project
+						.id} project ${!toggle.is_active ? 'deactivated' : 'still active'}`
+				);
 			} catch (e) {
-				reject(`failed to toggle ${pid}`);
+				reject(
+					`${data.new_project.client.name}: ${data.old_project
+						.id} failed to deactivate: ${e}`
+				);
 			}
+		} else {
+			log.info('"old" project is the Template ignoring');
 		}
 		resolve(data);
 	});

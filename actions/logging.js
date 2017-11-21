@@ -26,10 +26,13 @@ if (process.env.log) {
 	};
 
 	process.on('unhandledRejection', function(reason, pos) {
+		logger.send({ event: 'error', msg: reason.stack });
 		slack(
 			{ channel: config.slack.channel },
-			`Unhandled Rejection at: ${pos}, reason: ${reason}`
+			`Unhandled Rejection:
+			${reason.stack}`
 		);
+		process.exit(1);
 	});
 
 	process.on('exit', function() {
@@ -38,7 +41,7 @@ if (process.env.log) {
 } else {
 	module.exports = {
 		info: function(msg) {},
-		debug: function(msg) {},
+		info: function(msg) {},
 		warn: function(msg) {},
 		error: function(msg) {},
 		close: function() {}

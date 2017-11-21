@@ -7,9 +7,9 @@ const createProject = require('../utils/createProject'),
 	log = require('../actions/logging.js');
 //END dependies
 
-module.exports = function(new_project, old_project) {
+module.exports = function(new_project, old_project, client_name) {
 	return new Promise(function(resolve, reject) {
-		createProject({ old_project: old_project, new_project: new_project })
+		createProject({ old_project, new_project, client_name })
 			.then(getUsers)
 			.then(processUsers)
 			.then(getTasks)
@@ -17,12 +17,13 @@ module.exports = function(new_project, old_project) {
 			.then(toggleProject)
 			.then(function(data) {
 				log.info(
-					`${new_project.client_id}: ${data.new_pid} finished creating services project`
+					`${data.new_project.client
+						.name}: ${data.new_pid} finished creating services project`
 				);
-				resolve(data.new_pid);
+				resolve(data.new_project);
 			})
 			.catch(function(err) {
-				log.error(err);
+				log.error(`failed inside createServiceProject: ${err}`);
 				reject(err);
 			});
 	});

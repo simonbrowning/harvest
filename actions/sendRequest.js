@@ -12,17 +12,18 @@ const sendRequest = function(method, options) {
 	return new Promise(function(resolve, reject) {
 		let response;
 		if (!_.has(options, 'path') || !method) {
-			log.debug('No path / method was set');
+			log.info('No path / method was set');
 		}
 		//Options for reqest
 		const _options = {
 			method: method,
-			uri: config.harvest.project_url,
+			uri: config.harvestv2.project_url,
 			headers: {
-				'User-Agent': 'node-harvest',
+				'User-Agent': config.harvestv2.useragent,
 				'Content-Type': 'application/json',
 				Accept: 'application/json',
-				Authorization: config.harvest.auth
+				'Harvest-Account-ID': config.harvestv2.accountID,
+				Authorization: config.harvestv2.auth
 			},
 			json: true // Automatically parses the JSON string in the response
 		};
@@ -39,7 +40,6 @@ const sendRequest = function(method, options) {
 			}
 		}
 		//Make request
-
 		const send = function(options, cb, retry) {
 			let data = '';
 			throttledRequest(options)
@@ -50,23 +50,27 @@ const sendRequest = function(method, options) {
 					data += chunk;
 				})
 				.on('end', function(res) {
-					if (/201|203/.test(response.statusCode)) {
-						cb('success', response.headers.location.match(/\d+$/)[0]); //return resolve(response);
-					} else if (/5\d{2}/.test(response.statusCode)) {
+					// if (/201|203/.test(response.statusCode)) {
+					// 	cb('success', response.headers.location.match(/\d+$/)[0]); //return resolve(response);
+					// } else
+					if (response.statusCode == 429) {
 						if (config.retry.maxRetryies > retry) {
-							log.debug('500 error, retrying');
+							log.info('Throttled, retrying');
 							setTimeout(function() {
 								send(options, cb, ++retry);
 							}, Math.floor(config.retry.timeout * (Math.random() * 10)));
 						} else {
-							log.debug('Giving up');
-							cb('failed', data || response.statusMessage);
+							log.info('Giving up');
+							return cb('failed', data || response.statusMessage);
 						}
 					} else if (/4\d{2}/.test(response.statusCode)) {
-						cb('failed', JSON.parse(data).message);
+						let error = JSON.parse(data);
+						return cb('failed', error.error || error.error_description || data);
 					}
-					if (!/5\d{2}|201|203/.test(response.statusCode)) {
-						cb('success', JSON.parse(data || '{}'));
+					if (/2\d{2}/.test(response.statusCode)) {
+						return cb('success', JSON.parse(data || '{}'));
+					} else {
+						return cb('failed', data);
 					}
 				});
 		};

@@ -4,24 +4,21 @@ const sendRequest = require('../actions/sendRequest.js'),
 module.exports = function(data) {
 	return new Promise(async function(resolve, reject) {
 		let new_project;
-		log.debug('Create new project');
+		log.info(data.client_name + ': Create new project');
 		try {
-			new_project = await sendRequest('POST', {
+			data.new_project = await sendRequest('POST', {
 				path: '/projects',
-				body: {
-					project: data.new_project
-				}
+				form: data.new_project
 			});
+			log.info(
+				`${data.client_name}: ${data.new_project
+					.id} new service project created`
+			);
 		} catch (e) {
-			log.warn(
-				`${data.new_project.client_id} failed to create new project: ${e}`
-			);
-			reject(
-				`${data.new_project.client_id} failed to create new project: ${e}`
-			);
+			log.warn(`${data.client_name} failed to create new project: ${e}`);
+			reject(` failed to create new project: ${e}`);
 		}
-		log.debug(`${data.new_project.client_id} - ${new_project} created`);
-		data.new_pid = new_project;
+		data.new_pid = data.new_project.id;
 		resolve(data);
 	});
 };
