@@ -164,7 +164,7 @@ async function start(args) {
 		new_project.is_active = true;
 		new_project.notes = JSON.stringify({
 			client_hours: client_object.client_hours,
-			client_bucket: client_object.client_hours,
+			client_bucket: client_object.client_bucket,
 			account_manager: client_object.account_manager
 		});
 		new_project.estimate =
@@ -173,6 +173,12 @@ async function start(args) {
 		new_project.budget_by = 'project';
 		new_project.billable = true;
 		new_project.notify_when_over_budget = true;
+		new_project.starts_on = moment()
+			.startOf('month')
+			.format();
+		new_project.ends_on = moment()
+			.endOf('month')
+			.format();
 
 		let client_services_project = await createServiceProject(
 			new_project,
