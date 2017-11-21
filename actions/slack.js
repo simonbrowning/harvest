@@ -1,6 +1,5 @@
 const request = require('request'),
-	config = require('../config'),
-	log = require('../actions/logging.js');
+	config = require('../config');
 
 let options = {
 	method: 'POST',
@@ -29,12 +28,7 @@ module.exports = function({ channel, project, client, pid, role }, text) {
 		};
 
 		request(options, function(error, response, body) {
-			if (error || response.statusCode == 404) {
-				log.warn(`${cleint}: Failed to Slack ${channel}`);
-				resolve();
-			} else {
-				resolve();
-			}
+			resolve();
 		});
 	});
 };
