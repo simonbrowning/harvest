@@ -1,5 +1,6 @@
 const request = require('request'),
-	config = require('../config');
+	config = require('../config'),
+	log = require('../actions/logging.js');
 
 let options = {
 	method: 'POST',
