@@ -15,7 +15,6 @@ function errorHandle(e) {
 }
 
 module.exports = function() {
-	console.log('starting');
 	return new Promise(function(resolve, reject) {
 		async function callback(projects) {
 			let support_project = await sendRequest('GET', {
