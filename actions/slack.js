@@ -36,10 +36,11 @@ module.exports = function({ channel, project, client, pid, role }, text) {
 			};
 
 			request(options, function(error, response, body) {
-				if (error) {
-					reject(error);
-				} else if (response.statusCode == 404) {
-					reject(response.body);
+				if (error || response.statusCode == 404) {
+					log.warn(`${cleint}: Failed to Slack ${channel}`);
+					resolve();
+				} else if () {
+					resolve(response.body);
 				} else {
 					resolve();
 				}
