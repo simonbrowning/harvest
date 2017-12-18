@@ -40,10 +40,15 @@ if (process.env.log) {
 	});
 } else {
 	module.exports = {
-		info: function(msg) {},
-		info: function(msg) {},
-		warn: function(msg) {},
-		error: function(msg) {},
+		info: function(msg) {
+			console.log(msg);
+		},
+		warn: function(msg) {
+			console.log('WARN', msg);
+		},
+		error: function(msg) {
+			console.log('ERROR', msg);
+		},
 		close: function() {}
 	};
 }

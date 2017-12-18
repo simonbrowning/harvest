@@ -6,7 +6,10 @@ const config = require('../config'),
 	processTasks = require('../utils/processTasks'),
 	processUsers = require('../utils/processUsers'),
 	toggleProject = require('../utils/toggleProject'),
-	log = require('../actions/logging.js'),
+	setPM = require('../utils/setPM'),
+	log = require('../actions/logging'),
+	addUser = require('../utils/addUser'),
+	findUser = require('../utils/findUser'),
 	moment = require('moment');
 
 function errorHandle(e) {
@@ -21,6 +24,8 @@ module.exports = function() {
 				path: `/projects/${config.harvestv2.default_project}`
 			});
 
+			let harvest_users = await getPages('users');
+			log.info(`Total number of users ${harvest_users.length}`);
 			let support_tasks = await getTasksAssignment({ old_project: support_project });
 			support_tasks = support_tasks.tasks;
 
@@ -36,6 +41,7 @@ module.exports = function() {
 					if (project.name === config.harvestv2.service_project + moment().format('YYYY-MM')) {
 						log.info(project.client.name, project.name);
 						try {
+							let notes = JSON.parse(project.notes);
 							let tasks = await getTasksAssignment({ old_project: project });
 							tasks = tasks.tasks;
 
@@ -44,6 +50,48 @@ module.exports = function() {
 
 							log.info(`${project.client.name}: ${project.id} tasks: ${tasks.length}`);
 							log.info(`${project.client.name}: ${project.id} users: ${users.length}`);
+
+							//check AM is assigned and Project Manager
+
+							log.info(`${project.client.name}: ${project.id} find ${notes.account_manager}`);
+							let account_manager = findUser(users, notes.account_manager);
+
+							if (typeof account_manager !== 'undefined') {
+								log.info(
+									`${project.client.name}: ${project.id} found Account Manager ${account_manager.user.name}`
+								);
+								if (account_manager.is_project_manager) {
+									log.info(`${project.client.name}: ${project.id} ${account_manager.user.name} is PM`);
+								} else {
+									log.info(
+										`${project.client.name}: ${project.id} ${
+											account_manager.user.name
+										} not set as PM, updating`
+									);
+									await setPM(project, account_manager.id);
+								}
+							} else {
+								log.info(
+									`${project.client.name}: ${project.id} lets look in all users for ${notes.account_manager}`
+								);
+
+								account_manager = findUser(harvest_users, notes.account_manager);
+								log.info(
+									`${project.client.name}: ${project.id} found ${notes.account_manager} - ${
+										account_manager.id
+									} adding`
+								);
+
+								let added_user = await addUser(project.id, account_manager.id).catch(errorHandle);
+								if (added_user !== null) {
+									log.info(
+										`${project.client.name}: ${project.id} added ${notes.account_manager} now making a PM`
+									);
+									await setPM(project, account_manager.id);
+
+									log.info(`${project.client.name}: ${project.id} finished adding ${notes.account_manager}`);
+								}
+							}
 
 							//Work out if the poject has less users / tasks than the Template
 							let current_support_users = {},
