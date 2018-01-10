@@ -21,7 +21,8 @@ const sendRequest = require('../actions/sendRequest.js'),
 	setPM = require('../utils/setPM.js'),
 	processTasks = require('../utils/processTasks.js'),
 	slack = require('../actions/slack.js'),
-	log = require('../actions/logging.js');
+	log = require('../actions/logging.js'),
+	toggle = require('../utils/toggleProject');
 
 function errorHandle(e) {
 	log.warn(`caught rejection: ${e}`);
@@ -41,14 +42,19 @@ async function start(args) {
 	log.info(`${client_object.account}: getting users`);
 	const users = await getPages('users').catch(errorHandle);
 
-	log.info(`${client_object.account}: finding Account Manager`);
 	let am = {};
-	am.user = findUser(users, client_object.account_manager);
-	log.info(am.user);
+	if (client_object.account_manager === client_object.deployment_manager) {
+		am.user = null;
+	} else {
+		log.info(`${client_object.account}: finding Account Manager`);
+		am.user = findUser(users, client_object.account_manager);
+	}
+
 	if (am.user) {
 		log.info(`${client_object.account}: found ${client_object.account_manager}`);
 	} else {
-		log.error(`${client_object.account}: are ${client_object.account_manager} in Harvest?`);
+		log.error(`${client_object.account}: is ${client_object.account_manager} in Harvest?`);
+		client_object.account_manager = null;
 	}
 
 	log.info(`${client_object.account}: seeing if client exists`);
@@ -78,7 +84,7 @@ async function start(args) {
 		config.harvestv2.service_project + moment().format('YYYY-MM')
 	);
 
-	if (service_project) {
+	if (service_project && client_object.status === 'Active') {
 		service_project = service_project;
 		log.info(`${client_object.account}: has services project`);
 		log.info(`${client_object.account}: checking hours`);
@@ -144,6 +150,9 @@ async function start(args) {
 				);
 			}
 		}
+	} else if (service_project && client_object.status == 'Inactive') {
+		log.info(`${client_object.account}: No longer active closing `);
+		await toggle({ new_project: service_project, old_project: service_project });
 	} else {
 		log.info(`${client_object.account}: no services project found`);
 
@@ -278,7 +287,7 @@ async function start(args) {
 
 					if (filteredTasks.length > 0) {
 						log.info(`${client_object.account}: ${data.new_pid} adding tasks`);
-						log.info(filteredTasks);
+
 						await processTasks({
 							old_project: { client_id: client_object.account },
 							tasks: filteredTasks,

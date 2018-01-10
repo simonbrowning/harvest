@@ -87,7 +87,7 @@ module.exports = function() {
 									log.info(
 										`${project.client.name}: ${project.id} added ${notes.account_manager} now making a PM`
 									);
-									await setPM(project, account_manager.id);
+									await setPM(project, added_user.id);
 
 									log.info(`${project.client.name}: ${project.id} finished adding ${notes.account_manager}`);
 								}
@@ -160,7 +160,8 @@ module.exports = function() {
 
 							resolve();
 						} catch (e) {
-							reject(e);
+							log.info(`FAILED: ${project.client.name}: ${project.id}: ${e}`);
+							resolve(e);
 						}
 					} else {
 						if (
@@ -175,6 +176,9 @@ module.exports = function() {
 						}
 						resolve();
 					}
+				}).catch(function(reason) {
+					log.error(`failed - ${reason}`);
+					return resolve();
 				});
 			});
 
