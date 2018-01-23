@@ -1,5 +1,5 @@
 {
-	"name": "harvest-project-rollover",
+	"name": "harvest",
 	"version": "1.0.0",
 	"description": "A nodeJS script for updating Harvest Project on a scheduled basis.",
 	"main": "app.js",
@@ -9,10 +9,7 @@
 		"http": "NODE_ENV=dev node services/http.js",
 		"addUser": "NODE_ENV=production node tasks/addUser.js"
 	},
-	"keywords": [
-		"Harvest",
-		"nodeJS"
-	],
+	"keywords": ["Harvest", "nodeJS", "time tracking"],
 	"author": "Simon Browning",
 	"license": "ISC",
 	"dependencies": {
