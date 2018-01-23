@@ -83,6 +83,7 @@ function processProjects(projects) {
 							new_project.budget_by = 'project';
 							new_project.billable = true;
 							new_project.notify_when_over_budget = true;
+							new_project.over_budget_notification_percentage = project.over_budget_notification_percentage;
 							new_project.starts_on = moment()
 								.startOf('month')
 								.format();
