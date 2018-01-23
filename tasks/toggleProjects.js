@@ -1,21 +1,26 @@
+process.env.NODE_ENV === 'dev';
+
 var config = require('../config'),
+	getPages = require('../actions/getPages'),
 	sendRequest = require('../actions/sendRequest'),
-	toggleProject = require('../utils/toggleProject');
+	moment = require('moment');
+active = true;
 
 function callback(body) {
 	console.log('Got projects now loop');
 	//var projects = JSON.parse(body);
-	body.forEach(function({ project }) {
+	body.forEach(function(project) {
 		let PID = project.id;
-		if (
-			PID != config.harvest.default_project &&
-			/2017-09$/.test(project.name) &&
-			project.active === true
-		) {
+		if (PID != config.harvest.default_project && project.name === 'Services - 2017-12') {
 			console.log(`${PID} to be toggled.`);
-			toggleProject({ old_project: project })
+			sendRequest('PATCH', {
+				path: `/projects/${PID}/`,
+				form: {
+					is_active: active
+				}
+			})
 				.then(function() {
-					console.log(`${PID} toggled.`);
+					console.log(`${PID} ${active ? 'activated' : 'deactivated'}`);
 				})
 				.catch(function(reason) {
 					console.log(`${PID} failed, ${reason}`);
@@ -23,10 +28,12 @@ function callback(body) {
 		}
 	});
 }
-console.log(config.harvest.project_url);
+// console.log(config.harvest.project_url);
 console.log('Get Projects');
-sendRequest('GET', { path: '/projects' })
-	.then(callback)
-	.catch(function(reason) {
-		console.log(`Failed: ${reason}`);
-	});
+setTimeout(function() {
+	getPages('projects')
+		.then(callback)
+		.catch(function(reason) {
+			console.log(`Failed: ${reason}`);
+		});
+}, 1500);
