@@ -3,11 +3,24 @@ let last_request = {},
 
 const fastify = require('fastify')(),
 	_ = require('underscore'),
-	{ exec } = require('child_process');
+	{ spawn } = require('child_process');
 
 fastify.post('/github-commit', function(req, res) {
-	exec('cd /home/simon/harvest && git pull');
-	res.send(202, 'Accepted\n');
+	let git = spawn('git', ['pull']),
+		result = '';
+
+	git.stdout.on('data', function(data) {
+		result += data;
+	});
+
+	git.stdout.on('end', function(data) {
+		console.log(result);
+	});
+
+	git.on('close', function(code) {
+		console.log(`child process exited with code ${code}`);
+		res.send('commit');
+	});
 });
 
 fastify.listen(3001, function(err) {
