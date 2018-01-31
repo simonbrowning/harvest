@@ -3,7 +3,7 @@ let last_request = {},
 
 const fastify = require('fastify')(),
 	_ = require('underscore'),
-	{ exec } = require('child_process';
+	{ exec } = require('child_process');
 
 fastify.post('/github-commit', function(req, res) {
 	exec('cd /home/simon/harvest && git pull');
