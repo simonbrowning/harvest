@@ -38,7 +38,10 @@ module.exports = function() {
 
 			let promises = projects.map(function(project) {
 				return new Promise(async function(resolve, reject) {
-					if (project.name === config.harvestv2.service_project + moment().format('YYYY-MM')) {
+					if (
+						project.is_active &&
+						project.name === config.harvestv2.service_project + moment().format('YYYY-MM')
+					) {
 						log.info(project.client.name, project.name);
 						try {
 							let notes = JSON.parse(project.notes);
@@ -52,44 +55,53 @@ module.exports = function() {
 							log.info(`${project.client.name}: ${project.id} users: ${users.length}`);
 
 							//check AM is assigned and Project Manager
+							let account_manager;
 
-							log.info(`${project.client.name}: ${project.id} find ${notes.account_manager}`);
-							let account_manager = findUser(users, notes.account_manager);
+							if (notes.account_manager === null) {
+								log.info(`${project.client.name}: ${project.id} no account manager set`);
+							} else {
+								log.info(`${project.client.name}: ${project.id} find ${notes.account_manager}`);
+								account_manager = findUser(users, notes.account_manager);
 
-							if (typeof account_manager !== 'undefined') {
-								log.info(
-									`${project.client.name}: ${project.id} found Account Manager ${account_manager.user.name}`
-								);
-								if (account_manager.is_project_manager) {
-									log.info(`${project.client.name}: ${project.id} ${account_manager.user.name} is PM`);
+								if (typeof account_manager !== 'undefined') {
+									log.info(
+										`${project.client.name}: ${project.id} found Account Manager ${account_manager.user.name}`
+									);
+									if (account_manager.is_project_manager) {
+										log.info(`${project.client.name}: ${project.id} ${account_manager.user.name} is PM`);
+									} else {
+										log.info(
+											`${project.client.name}: ${project.id} ${
+												account_manager.user.name
+											} not set as PM, updating`
+										);
+										await setPM(project, account_manager.id);
+									}
 								} else {
 									log.info(
-										`${project.client.name}: ${project.id} ${
-											account_manager.user.name
-										} not set as PM, updating`
+										`${project.client.name}: ${project.id} lets look in all users for ${
+											notes.account_manager
+										}`
 									);
-									await setPM(project, account_manager.id);
-								}
-							} else {
-								log.info(
-									`${project.client.name}: ${project.id} lets look in all users for ${notes.account_manager}`
-								);
 
-								account_manager = findUser(harvest_users, notes.account_manager);
-								log.info(
-									`${project.client.name}: ${project.id} found ${notes.account_manager} - ${
-										account_manager.id
-									} adding`
-								);
-
-								let added_user = await addUser(project.id, account_manager.id).catch(errorHandle);
-								if (added_user !== null) {
+									account_manager = findUser(harvest_users, notes.account_manager);
 									log.info(
-										`${project.client.name}: ${project.id} added ${notes.account_manager} now making a PM`
+										`${project.client.name}: ${project.id} found ${notes.account_manager} - ${
+											account_manager.id
+										} adding`
 									);
-									await setPM(project, added_user.id);
 
-									log.info(`${project.client.name}: ${project.id} finished adding ${notes.account_manager}`);
+									let added_user = await addUser(project.id, account_manager.id).catch(errorHandle);
+									if (added_user !== null) {
+										log.info(
+											`${project.client.name}: ${project.id} added ${notes.account_manager} now making a PM`
+										);
+										await setPM(project, added_user.id);
+
+										log.info(
+											`${project.client.name}: ${project.id} finished adding ${notes.account_manager}`
+										);
+									}
 								}
 							}
 

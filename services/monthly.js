@@ -94,7 +94,7 @@ function processProjects(projects) {
 							log.info(`${project.client.name}: ${pid} create new services project`);
 							createServiceProject(new_project, project, project.client.name)
 								.then(async function(project) {
-									if (notes.account_manager) {
+									if (notes.account_manager !== null) {
 										log.info(`${project.client.name}: ${project.id} make sure Account Manager is set`);
 										let users = await getPages('users');
 										let am = {};
@@ -113,6 +113,11 @@ function processProjects(projects) {
 											);
 										}
 									} else {
+										log.error(
+											`${project.client.name}: ${project.id} no Account Manager ${
+												notes.account_manager
+											} not set`
+										);
 									}
 									resolve();
 								})
