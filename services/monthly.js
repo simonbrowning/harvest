@@ -102,9 +102,7 @@ function processProjects(projects) {
 										if (am.user) {
 											am.uid = await addUser(project.id, am.user.id).catch(errorHandle);
 											await setPM(project, am.uid.id).catch(errorHandle);
-											log.info(
-												`${client_object.account} ${project.name}:  added ${client_object.account_manager}`
-											);
+											log.info(`${project.client.name} ${project.name}:  added ${notes.account_manager}`);
 										} else {
 											log.error(
 												`${project.client.name}: ${project.id} no Account Manager ${
