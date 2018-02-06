@@ -84,7 +84,7 @@ async function start(args) {
 		config.harvestv2.service_project + moment().format('YYYY-MM')
 	);
 
-	if (service_project && client_object.status === 'Active') {
+	if (service_project && client_object.is_active === true) {
 		service_project = service_project;
 		log.info(`${client_object.account}: has services project`);
 		log.info(`${client_object.account}: checking hours`);
