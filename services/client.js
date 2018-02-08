@@ -77,6 +77,9 @@ async function start(args) {
 		}
 	}
 
+	log.info(
+		`${client_object.account}: Finding ${config.harvestv2.service_project + moment().format('YYYY-MM')}`
+	);
 	//Sort out services projects
 	let service_project = findProject(
 		projects,
@@ -84,7 +87,7 @@ async function start(args) {
 		config.harvestv2.service_project + moment().format('YYYY-MM')
 	);
 
-	if (service_project && client_object.is_active === true) {
+	if (service_project && client_object.status === 'Active') {
 		service_project = service_project;
 		log.info(`${client_object.account}: has services project`);
 		log.info(`${client_object.account}: checking hours`);
