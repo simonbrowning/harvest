@@ -33,13 +33,13 @@
 	});
 
 	console.log('adding user(s) to projects');
-	projects.forEach(function({ project }) {
+	projects.forEach(function(project) {
 		if (
 			/^services/i.test(project.name) &&
-			(project.active || project.id === config.harvest.default_project)
+			(project.is_active || project.id === config.harvest.default_project)
 		) {
 			console.log(`adding users to ${project.id}`);
-			userObjs.forEach(function({ user }) {
+			userObjs.forEach(function(user) {
 				let uid = addUser(project.id, user.id).catch(function(e) {
 					console.error(e);
 					return null;
