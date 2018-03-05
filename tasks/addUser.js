@@ -1,4 +1,4 @@
-(async function() {
+async function init() {
 	const config = require('../config'),
 		getPages = require('../actions/getPages'),
 		sendRequest = require('../actions/sendRequest'),
@@ -33,23 +33,50 @@
 	});
 
 	console.log('adding user(s) to projects');
-	projects.forEach(function(project) {
+	console.time('projects');
+	let promises = projects.map(function(project) {
+		return new Promise(function(resolve,reject){
 		if (
-			/^services/i.test(project.name) &&
-			(project.is_active || project.id === config.harvest.default_project)
+			/^services/i.test(project.name) && project.id === 16606886
+			//(project.is_active || project.id === config.harvest.default_project)
 		) {
+			
 			console.log(`adding users to ${project.id}`);
-			userObjs.forEach(function(user) {
-				let uid = addUser(project.id, user.id).catch(function(e) {
-					console.error(e);
-					return null;
+			let userPromises = userObjs.map(function(user) {
+				return new Promise(async function(resolve,reject){
+					let uid = await addUser(project.id, user.id).catch(function(e) {
+						console.error(e);
+						reject(e);
+					});
+					if (uid == null) {
+						console.error(`failed to add ${user.email} to project ${project.id}`);
+						reject(`FAILED: to add ${user.email} to project ${project.id}`);
+					} else {
+						console.log(`user ${user.email} added to ${project.id}`);
+						resolve();
+					}
 				});
-				if (uid == null) {
-					console.error(`failed to add ${user.email} to project ${project.id}`);
-				}
-				console.log(`user ${user.email} added to ${project.id}`);
 			});
+
+			Promise.all(userPromises).then(function(){
+				console.log(`finished userPromise`);
+				return resolve();
+			}).catch(function(e){
+				console.log(`ERROR: userPromises failed ${e}`);
+			})
+		}else{
+			resolve();
 		}
+		})
 	});
-	console.log('finsihed adding users');
-})();
+
+	Promise.all(promises).then(function(){
+			console.timeEnd('projects');
+			console.log('finsihed adding users');
+		}
+	).catch(function(e){
+		console.log(`ERROR: projects promises failed ${e}`);
+	});
+}
+
+init();
