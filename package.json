@@ -9,7 +9,11 @@
 		"http": "NODE_ENV=dev node services/http.js",
 		"addUser": "NODE_ENV=production node tasks/addUser.js"
 	},
-	"keywords": ["Harvest", "nodeJS", "time tracking"],
+	"keywords": [
+		"Harvest",
+		"nodeJS",
+		"time tracking"
+	],
 	"author": "Simon Browning",
 	"license": "ISC",
 	"dependencies": {
@@ -21,7 +25,8 @@
 		"requestretry": "^1.12.2",
 		"simple-node-logger": "^0.93.14",
 		"throttled-request": "^0.1.1",
-		"underscore": "^1.8.3"
+		"underscore": "^1.8.3",
+		"xml-js": "^1.6.2"
 	},
 	"devDependencies": {
 		"node-notifier": "^5.1.2"

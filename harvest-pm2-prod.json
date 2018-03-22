@@ -9,8 +9,8 @@
 			}
 		},
 		{
-			"name": "dns",
-			"script": "./services/dns.js",
+			"name": "ip",
+			"script": "./services/ip.js",
 			"watch": true
 		},
 		{
