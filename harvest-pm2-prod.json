@@ -7,6 +7,16 @@
 			"env": {
 				"NODE_ENV": "production"
 			}
+		},
+		{
+			"name": "dns",
+			"script": "./services/dns.js",
+			"watch": true
+		},
+		{
+			"name": "github",
+			"script": "./services/github.js",
+			"watch": true
 		}
 	]
 }
