@@ -36,11 +36,7 @@ async function init() {
 	console.time('projects');
 	let promises = projects.map(function(project) {
 		return new Promise(function(resolve,reject){
-		if (
-			/^services/i.test(project.name) && project.id === 16606886
-			//(project.is_active || project.id === config.harvest.default_project)
-		) {
-			
+		if (project.is_active || project.id === config.harvest.default_project){
 			console.log(`adding users to ${project.id}`);
 			let userPromises = userObjs.map(function(user) {
 				return new Promise(async function(resolve,reject){
