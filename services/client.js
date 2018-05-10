@@ -271,20 +271,20 @@ async function start(args) {
 					log.info(
 						`${client_object.account}: ${data.new_pid} filtering for deployment type ${client_object.type}`
 					);
-					let filteredTasks;
+					let filteredTasks = [];
 					if (client_object.type === 'AudienceStream') {
 						log.info(`${client_object.account}: ${data.new_pid} AS deployment`);
 						filteredTasks = findTasks(tasks, 'AS');
-					} else if (client_object.type === 'EventStream') {
+					} else if (client_object.type === 'Cloud Delivery') {
 						log.info(`${client_object.account}: ${data.new_pid} ES deployment`);
-						filteredTasks = findTasks(tasks, 'es');
+						filteredTasks = findTasks(tasks, 'ES');
 					} else if (client_object.type === 'Web') {
 						log.info(`${client_object.account}: ${data.new_pid} iQ deployment`);
 						filteredTasks = findTasks(tasks, 'iQ');
 					} else if (/android|ios|mobile web|blackberry|windows/i.test(client_object.type)) {
 						log.info(`${client_object.account}: ${data.new_pid} mobile deployment`);
 						let iq_tasks = findTasks(tasks, 'iQ');
-						let es_tasks = findTasks(tasks, 'es');
+						let es_tasks = findTasks(tasks, 'ES');
 						filteredTasks = iq_tasks.concat(es_tasks);
 					}
 
