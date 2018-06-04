@@ -43,7 +43,7 @@ async function start(args) {
 	const users = await getPages('users').catch(errorHandle);
 
 	let am = {};
-	if (client_object.account_manager === client_object.deployment_manager) {
+	if (client_object.account_manager === client_object.deployment_manager || !client.account_manager) {
 		am.user = null;
 	} else {
 		log.info(`${client_object.account}: finding Account Manager`);
