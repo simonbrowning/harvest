@@ -222,13 +222,15 @@ async function start(args) {
 		}
 
 		log.info(`${client_object.account} ${client_services_project.id}:  service project created`);
-		await slack(
-			{
-				channel: '@' + client_object.account_manager.replace(' ', '.').toLowerCase(),
-				client: client_object.account
-			},
-			`${client_object.account} has been created in Harvest.`
-		);
+		if(client_object.account_manager){
+			await slack(
+				{
+					channel: '@' + client_object.account_manager.replace(' ', '.').toLowerCase(),
+					client: client_object.account
+				},
+				`${client_object.account} has been created in Harvest.`
+			);
+		}
 	}
 
 	//run through deployment project
