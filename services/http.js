@@ -82,7 +82,7 @@ fastify.post('/api/client', function(req, res) {
 		spwanClient(update);
 	}
 
-	res.setHeader('Content-type','application/json');
+	res.type('json');
 	return res.send(JSON.stringify({result:'ok'}));
 });
 
