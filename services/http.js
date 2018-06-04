@@ -72,7 +72,8 @@ fastify.post('/api/client', function(req, res) {
 			last_request.deployment_project === update.deployment_project
 		) {
 			log.info('dupliacte deployment ignoring');
-			return res.send('duplicate');
+			res.type('json');
+			return res.send(JSON.stringify({result:'duplicate'}));
 		} else {
 			last_request = update;
 			waitForPrevious(update);
