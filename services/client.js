@@ -277,7 +277,7 @@ async function start(args) {
 					if (client_object.type === 'AudienceStream') {
 						log.info(`${client_object.account}: ${data.new_pid} AS deployment`);
 						filteredTasks = findTasks(tasks, 'AS');
-					} else if (client_object.type === 'Cloud Delivery') {
+					} else if (client_object.type === 'Cloud Delivery' || client_object.type === 'EventStream') {
 						log.info(`${client_object.account}: ${data.new_pid} ES deployment`);
 						filteredTasks = findTasks(tasks, 'ES');
 					} else if (client_object.type === 'Web') {
@@ -288,6 +288,9 @@ async function start(args) {
 						let iq_tasks = findTasks(tasks, 'iQ');
 						let es_tasks = findTasks(tasks, 'ES');
 						filteredTasks = iq_tasks.concat(es_tasks);
+					}else if(client_object.type === 'DataAccess'){
+						log.info(`${client_object.account}: ${data.new_pid} DA deployment`);
+						filteredTasks = findTasks(tasks, 'DA');
 					}
 
 					if (filteredTasks.length > 0) {
