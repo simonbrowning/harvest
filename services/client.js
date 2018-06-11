@@ -222,7 +222,7 @@ async function start(args) {
 		}
 
 		log.info(`${client_object.account} ${client_services_project.id}:  service project created`);
-		if(client_object.account_manager){
+		if(client_object.account_manager && typeof client_object.account_manager === "string"){
 			await slack(
 				{
 					channel: '@' + client_object.account_manager.replace(' ', '.').toLowerCase(),
