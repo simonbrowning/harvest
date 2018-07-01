@@ -60,6 +60,7 @@ async function start() {
 	//loop through accounts to add.
 	accountsToAdd.forEach(function(account) {
 		projects.forEach(async function(project) {
+			console.log(account.toLowerCase(),project.client.name.toLowerCase())
 			if (account.toLowerCase() == project.client.name.toLowerCase()) {
 				console.log(`add ${account_manager} to ${project.client.name} project ${project.id}`);
 				let added_user = await addUser(project.id, am.id);
