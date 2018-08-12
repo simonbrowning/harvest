@@ -1,6 +1,6 @@
+/tasks/accounts.txt
 /node_modules
 /config/dev.js
 /config/prod.js
 .DS_Store
 /logs
-/tasks/accounts.txt
