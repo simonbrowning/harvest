@@ -3,11 +3,12 @@ process.env.log = 'http';
 let last_request = {},
 	previous_process;
 
-const fastify = require('fastify')(),
+const express = require('express'),
 	_ = require('underscore'),
 	{ execFile } = require('child_process'),
 	log = require('../actions/logging.js');
 
+const app = express();
 function spwanClient(update) {
 	let args = [`${__dirname}/client.js`],
 		sub;
@@ -40,11 +41,11 @@ function waitForPrevious(update) {
 	}
 }
 
-fastify.get('/api/status', function(req, res) {
+app.get('/api/status', function(req, res) {
 	res.send('Not dead yet.');
 });
 
-fastify.post('/api/client', function(req, res) {
+app.post('/api/client', function(req, res) {
 	let update = req.body;
 
 	//If no hours have been set set to 0
@@ -87,7 +88,7 @@ fastify.post('/api/client', function(req, res) {
 	return res.send(JSON.stringify({result:'ok'}));
 });
 
-fastify.listen(3000, function(err) {
+app.listen(3000, function(err) {
 	if (err) throw err;
-	log.info(`server listening on ${fastify.server.address().port}`);
+	log.info(`Express server listening on 3000`);
 });
