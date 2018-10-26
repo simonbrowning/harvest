@@ -6,9 +6,14 @@ let last_request = {},
 const express = require('express'),
 	_ = require('underscore'),
 	{ execFile } = require('child_process'),
-	log = require('../actions/logging.js');
-
+	log = require('../actions/logging.js'),
+	bodyParser = require("body-parser");
 const app = express();
+
+//Here we are configuring express to use body-parser as middle-ware.
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
 function spwanClient(update) {
 	let args = [`${__dirname}/client.js`],
 		sub;
@@ -42,10 +47,12 @@ function waitForPrevious(update) {
 }
 
 app.get('/api/status', function(req, res) {
+	log.info(`status api called`);
 	res.send('Not dead yet.');
 });
 
 app.post('/api/client', function(req, res) {
+	log.info(`client api called`);
 	let update = req.body;
 
 	//If no hours have been set set to 0
