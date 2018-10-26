@@ -3,7 +3,8 @@ let last_request = {},
 
 const express = require('express'),
 	_ = require('underscore'),
-	{ spawn } = require('child_process');
+	{ spawn } = require('child_process'),
+	bodyParser = require("body-parser");
 
 	const app = express();
 
