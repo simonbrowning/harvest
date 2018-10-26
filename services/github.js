@@ -1,11 +1,16 @@
 let last_request = {},
 	previous_process;
 
-const fastify = require('fastify')(),
+const express = require('express'),
 	_ = require('underscore'),
 	{ spawn } = require('child_process');
 
-fastify.post('/github-commit', function(req, res) {
+	const app = express();
+
+	//Here we are configuring express to use body-parser as middle-ware.
+	app.use(bodyParser.urlencoded({ extended: false }));
+	app.use(bodyParser.json());
+	app.post('/github-commit', function(req, res) {
 	let git = spawn('git', ['pull']),
 		result = '';
 
@@ -23,7 +28,7 @@ fastify.post('/github-commit', function(req, res) {
 	});
 });
 
-fastify.listen(3001, function(err) {
+app.listen(3001, function(err) {
 	if (err) throw err;
-	console.log(`server listening on ${fastify.server.address().port}`);
+	console.log(`server listening on ${3001}`);
 });
