@@ -12,13 +12,13 @@ const _ = require("underscore"),
 
 moment.locale('en-gb');
 const tasks = {
-    "true": {
+    billable: {
         iQ: 8086797,
         AudienceStream: 8086779,
         EventStream: 8609330,
         DataAccess: 8086798
     },
-    "false": {
+    nonbillable: {
         iQ: 8086791,
         AudienceStream: 8086788,
         EventStream: 8609332,
