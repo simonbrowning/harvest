@@ -31,16 +31,16 @@ function errorHandle(e) {
 }
 
 async function start(args) {
-    console.log(args);
+    
     if (args.length < 3) {
         process.exit(1);
     }
     let project_update;
     let time_event = JSON.parse(args[2]);
     
-    console.log(`${time_event.ticket_id}: started`);
+    log.info(`${time_event.ticket_id}: started`);
 
-    console.log(`${time_event.ticket_id}: getting projects`);
+    log.info(`${time_event.ticket_id}: getting projects`);
     try {
         projects = await getPages('projects');
     } catch (e) {
@@ -53,7 +53,7 @@ async function start(args) {
         }
     });
 
-    console.log(`${time_event.ticket_id}: getting users`);
+    log.info(`${time_event.ticket_id}: getting users`);
     try {
         people = await getPages('users');
     } catch (e) {
@@ -62,20 +62,20 @@ async function start(args) {
         process.exit(1);
     }
 
-    console.log(`${time_event.ticket_id}: identifying user`);
+    log.info(`${time_event.ticket_id}: identifying user`);
     
     let agent = findUser(people, time_event.agent);
     
     let task_id = tasks[time_event.billable][time_event.product];
     
     if (!project_update || !agent) {
-        console.log(`${time_event.ticket_id}: missing parameters, bailing out`);
+        log.info(`${time_event.ticket_id}: missing parameters, bailing out`);
         await slack({ channel: config.slack.channel }, `FAILED TO LOG TIME FOR:\n${JSON.stringify(time_event)}`);
     } else { 
-        console.log(`${time_event.ticket_id}: found project to log against: ${project_update.name}`);
-        console.log(`${time_event.ticket_id}: user found, ${agent.name}`);
-        console.log(`${time_event.ticket_id}: amount of time to record for ${time_event.company} against task ${task_id}; ${time_event.time_spent} hours`);
-        console.log(`${time_event.ticket_id}: Send time entry`);
+        log.info(`${time_event.ticket_id}: found project to log against: ${project_update.name}`);
+        log.info(`${time_event.ticket_id}: user found, ${agent.name}`);
+        log.info(`${time_event.ticket_id}: amount of time to record for ${time_event.company} against task ${task_id}; ${time_event.time_spent} hours`);
+        log.info(`${time_event.ticket_id}: Send time entry`);
         
         await sendRequest("POST", {
             path: "/time_entries",
@@ -96,7 +96,7 @@ async function start(args) {
         });
     }
 
-    console.log(`${time_event.ticket_id}: finished.`);
+    log.info(`${time_event.ticket_id}: finished.`);
     log.close();
     process.exit(0);
 }
