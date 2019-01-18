@@ -29,6 +29,21 @@ function spwanClient(update) {
 	});
 }
 
+function spwanTime(update) {
+	let args = [`${__dirname}/track_time.js`],
+		sub;
+
+	args.push(JSON.stringify(update));
+
+	previous_process = sub = execFile('node', args, {
+		detached: true,
+		stdio: 'ignore'
+	});
+	sub.on('exit', function () {
+		log.info(sub.pid + ' current process finished');
+	});
+}
+
 function waitForPrevious(update) {
 	if (previous_process._closesGot !== previous_process._closesNeeded) {
 		log.info(
@@ -50,6 +65,15 @@ app.get('/api/status', function(req, res) {
 	log.info(`status api called`);
 	res.send('Not dead yet.');
 });
+
+app.post('/api/time_entry', function (req, res) { 
+	let time_tracked = req.body;
+	log.info(`time api called`);
+	log.info(JSON.stringify(time_tracked));
+
+	spwanTime(time_tracked);
+	return res.send(JSON.stringify({ result: 'ok' }));	
+})
 
 app.post('/api/client', function(req, res) {
 	log.info(`client api called`);
