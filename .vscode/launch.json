@@ -7,6 +7,15 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Cache",
+            "program": "${workspaceFolder}/services/cache.js",
+            "env": {
+                "NODE_ENV": "production"
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Remove User",
             "program": "${workspaceFolder}/tasks/removeUser.js",
             "args": ["1381550"],

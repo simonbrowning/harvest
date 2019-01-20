@@ -73,7 +73,7 @@ async function start(args) {
         await slack({ channel: config.slack.channel }, `FAILED TO LOG TIME FOR:\n${JSON.stringify(time_event)}`);
     } else { 
         log.info(`${time_event.ticket_id}: found project to log against: ${project_update.name}`);
-        log.info(`${time_event.ticket_id}: user found, ${agent.name}`);
+        log.info(`${time_event.ticket_id}: user found, ${agent.first_name}`);
         log.info(`${time_event.ticket_id}: amount of time to record for ${time_event.company} against task ${task_id}; ${time_event.time_spent} hours`);
         log.info(`${time_event.ticket_id}: Send time entry`);
         

@@ -3,7 +3,8 @@ process.env.process = process.pid;
 
 const _ = require('underscore'),
 	config = require('../config'),
-	moment = require('moment');
+	moment = require('moment'),
+	request = require('request');
 
 const sendRequest = require('../actions/sendRequest.js'),
 	getPages = require('../actions/getPages.js'),
@@ -414,8 +415,11 @@ async function start(args) {
 		}
 	}
 	log.info(`${client_object.account}: finished.`);
-	log.close();
-	process.exit(0);
+	//clear cache
+	request.delete('http://127.0.0.1:3002/cache', function () {
+		log.close();
+		process.exit(0);
+	 });
 }
 
 start(process.argv);
