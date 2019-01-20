@@ -7,7 +7,7 @@ let http = execFile('node', [`${__dirname}/services/http.js`], {
 	detached: true,
 	stdio: 'ignore'
 });
-let http = execFile("node", [`${__dirname}/services/cache.js`], {
+let cache = execFile("node", [`${__dirname}/services/cache.js`], {
     detached: true,
     stdio: "ignore"
 });
