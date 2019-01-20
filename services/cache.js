@@ -31,7 +31,7 @@ app.get("/cache/stats", function(req, res) {
 
 app.get('/cache', function (req, res) {
     let key = decodeURI(req.query.key);
-    console.log(`New request for ${key}`);
+    log.info(`New request for ${key}`);
     res.type("json");
 
     if (!key) {
@@ -40,10 +40,10 @@ app.get('/cache', function (req, res) {
 
     myCache.get(key, function (err, value) { 
         if (err) {
-            console.log(`Error ${err}`);
+            log.info(`Error ${err}`);
             return res.send(JSON.stringify({ 'message': err }));  
         }
-        console.log(`${value ?  'SENDING CACHE' : 'NO CACHED VALUE'}`);
+        log.info(`${value ?  'SENDING CACHE' : 'NO CACHED VALUE'}`);
         return res.send(value? JSON.stringify(value) : null);
     });
 })
@@ -52,11 +52,12 @@ app.post('/cache', function (req, res) {
     let new_entry = req.body;
     res.type("json");
     let data = JSON.parse(new_entry.value);
-    console.log(`Set entry ${new_entry.name}`);
+    log.info(`Set entry ${new_entry.name}`);
     myCache.set(new_entry.name, data, function (err,success) { 
         if (err) { 
             return res.send(JSON.stringify({ 'message': err }));
         }
+        log.info(`Cache set: ${success}`)
         return res.send(JSON.stringify({ 'message': success ? "Cahce Set": "Cache Not Set" }));
     })
 });
