@@ -68,7 +68,7 @@ async function start(args) {
     
     let task_id = tasks[time_event.billable][time_event.product];
     
-    if (!project_update || !agent) {
+    if (!project_update || !agent || !task_id) {
         log.info(`${time_event.ticket_id}: missing parameters, bailing out`);
         await slack({ channel: config.slack.channel }, `FAILED TO LOG TIME FOR:\n${JSON.stringify(time_event)}`);
     } else { 
