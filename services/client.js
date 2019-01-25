@@ -232,6 +232,9 @@ async function start(args) {
 				`${client_object.account} has been created in Harvest.`
 			);
 		}
+		request.delete('http://127.0.0.1:3002/cache', function () {
+			log.info('New Services project created clearing cache');
+		});
 	}
 
 	//run through deployment project
@@ -416,10 +419,10 @@ async function start(args) {
 	}
 	log.info(`${client_object.account}: finished.`);
 	//clear cache
-	request.delete('http://127.0.0.1:3002/cache', function () {
+	
 		log.close();
 		process.exit(0);
-	 });
+	
 }
 
 start(process.argv);
