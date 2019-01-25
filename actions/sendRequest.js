@@ -57,12 +57,12 @@ const sendRequest = function(method, options) {
 					// } else
 					if (response.statusCode == 429) {
 						if (config.retry.maxRetryies > retry) {
-							log.warn('Throttled, retrying');
+							log.info('Throttled, retrying');
 							setTimeout(function() {
 								send(options, cb, ++retry);
 							}, Math.floor(config.retry.timeout * (Math.random() * 10)));
 						} else {
-							log.warn('Giving up');
+							log.warn("Too many retry attempts on throttling, giving up");
 							return cb('failed', data || response.statusMessage);
 						}
 					} else if (/4\d{2}/.test(response.statusCode)) {
