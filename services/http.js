@@ -30,18 +30,25 @@ function spwanClient(update) {
 }
 
 function spwanTime(update) {
-	let args = [`${__dirname}/track_time.js`],
-		sub;
+	return new Promise(function (resolve, reject) {
+		let args = [`${__dirname}/track_time.js`],
+			sub;
 
-	args.push(JSON.stringify(update));
+		args.push(JSON.stringify(update));
 
-	previous_process = sub = execFile('node', args, {
-		detached: true,
-		stdio: 'ignore'
-	});
-	sub.on('exit', function () {
-		log.info(sub.pid + ' current process finished');
-	});
+		sub = execFile('node', args, {
+			detached: true,
+			stdio: 'ignore'
+		}, function (error, stdout, stderr) {
+				log.info(sub.pid + " " + stdout);	
+			 resolve(stdout);
+		});
+		sub.on('exit', function () {
+			log.info(sub.pid + ' current process finished');
+		});
+	}).catch(function (reason) {
+
+	})
 }
 
 function waitForPrevious(update) {
@@ -66,13 +73,13 @@ app.get('/api/status', function(req, res) {
 	res.send('Not dead yet.');
 });
 
-app.post('/api/time_entry', function (req, res) { 
+app.post('/api/time_entry', async function (req, res) { 
 	let time_tracked = req.body;
 	log.info(`time api called`);
 	log.info(JSON.stringify(time_tracked));
 
-	spwanTime(time_tracked);
-	return res.send(JSON.stringify({ result: 'ok' }));	
+	let response = await spwanTime(time_tracked);
+	return res.send(JSON.stringify({ id: response }));	
 })
 
 app.post('/api/client', function(req, res) {

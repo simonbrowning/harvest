@@ -77,7 +77,7 @@ async function start(args) {
         log.info(`${time_event.ticket_id}: amount of time to record for ${time_event.company} against task ${task_id}; ${time_event.time_spent} hours`);
         log.info(`${time_event.ticket_id}: Send time entry`);
         
-        await sendRequest("POST", {
+        sendRequest("POST", {
             path: "/time_entries",
             form: {
                 user_id: agent.id,
@@ -93,12 +93,13 @@ async function start(args) {
                         }`
                 }
             }
+        }).then(function (response) {
+            process.stdout.write(response.id.toString());
+            log.info(`${time_event.ticket_id}: finished.`);
+            log.close();
+            process.exit(0);
         });
     }
-
-    log.info(`${time_event.ticket_id}: finished.`);
-    log.close();
-    process.exit(0);
 }
 
 start(process.argv);
