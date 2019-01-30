@@ -3,7 +3,7 @@ const xml = require("xml-js");
 const CronJob = require('cron').CronJob;
 
 
-const hosts = "sathu.li,*.sathu.li,harvest.sathu.li";
+const hosts = "sathu.li,*.sathu.li,harvest.sathu.li,timeoff.sathu.li";
 let currentIP = "";
 
 function updateIP(){
