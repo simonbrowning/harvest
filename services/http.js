@@ -40,18 +40,21 @@ function spwanTime(update) {
 			detached: true,
 			stdio: 'ignore'
 		}, function (error, stdout, stderr) {
-				if(stderr) {
+				if(error || stderr) {
 					log.info(sub.pid + " " + stderr);
 					resolve(null);
 				 }else if (stdout) {
-					log.info(sub.pid + " " + stdout);
+					log.info(sub.pid + " Harvest ID:" + stdout);
 					resolve(stdout);
 				}
 		});
 		sub.on('exit', function () {
-			resolve(null);
 			log.info(sub.pid + ' current process finished');
 		});
+		sub.on("error", function () {
+			resolve(null);
+            log.info(sub.pid + " current process finished");
+        });
 	}).catch(function (reason) {
 
 	})
