@@ -87,7 +87,7 @@ async function start(args) {
                 task_id: task_id,
                 spent_date: moment().toISOString(),
                 hours: parseFloat(time_event.time_spent),
-                notes: `FreshDesk Ticket #${time_event.ticket_id}`,
+                notes: `#${time_event.ticket_id}`,
                 external_reference: {
                     id: time_event.ticket_id,
                     permalink: `https://support.tealiumiq.com/a/tickets/${
@@ -104,6 +104,9 @@ async function start(args) {
         }).catch(function (err) { 
             log.error(`${time_event.ticket_id}: failed to send time`);
             log.error(`${time_event.ticket_id}: ${err}`);
+            process.stderr.write(null);
+            log.close();
+            process.exit(1);
         })
     }
 }

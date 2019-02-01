@@ -40,8 +40,13 @@ function spwanTime(update) {
 			detached: true,
 			stdio: 'ignore'
 		}, function (error, stdout, stderr) {
-				log.info(sub.pid + " " + stdout);	
-			 resolve(stdout);
+				if(stderr) {
+					log.info(sub.pid + " " + stderr);
+					resolve(null);
+				 }else if (stdout) {
+					log.info(sub.pid + " " + stdout);
+					resolve(stdout);
+				}
 		});
 		sub.on('exit', function () {
 			resolve(null);
