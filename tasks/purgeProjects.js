@@ -9,21 +9,19 @@ function callback(body) {
 	//var projects = JSON.parse(body);
 	body.forEach(function(project) {
 		let PID = project.id;
-		if (
-			PID != config.harvest.default_project
-			//  &&
-			// /^Services/.test(project.name) &&
-			// project.name == 'Services 2017-11'
-		) {
-			console.log(`${PID} to be deleted.`);
-			sendRequest('DELETE', { path: `/projects/${PID}/` })
-				.then(function() {
-					console.log(`${PID} deleted.`);
-				})
-				.catch(function(reason) {
-					console.log(`${PID} failed, ${reason}`);
-				});
-		}
+		if (project.name == "Services - 2019-02" && project.is_active && PID == 19994449) {
+            let notes = JSON.parse(project.notes);
+            if (parseInt(notes.client_bucket) == 0) {
+                console.log(`${PID} to be deleted.`);
+                sendRequest("DELETE", { path: `/projects/${PID}/` })
+                    .then(function() {
+                        console.log(`${PID} deleted.`);
+                    })
+                    .catch(function(reason) {
+                        console.log(`${PID} failed, ${reason}`);
+                    });
+            }
+        }
 	});
 }
 console.log(config.harvest.project_url);

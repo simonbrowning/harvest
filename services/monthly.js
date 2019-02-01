@@ -30,8 +30,9 @@ function processProjects(projects) {
 			return new Promise(function(resolve, reject) {
 				//Check if project has a date YYYY-MM at the end of the project and is active
 				//if (_.has(project, 'name') && project.name.endsWith(last_month) && project.is_active) {
-
-				if (
+				if (_.has(project, 'name') && project.name == "Services") { 
+					resolve();
+				}else if (
 					_.has(project, 'name') &&
 					project.name == config.harvestv2.service_project + last_month &&
 					project.is_active

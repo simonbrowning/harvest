@@ -4,14 +4,14 @@ var config = require('../config'),
 	getPages = require('../actions/getPages'),
 	sendRequest = require('../actions/sendRequest'),
 	moment = require('moment');
-active = true;
+active = false;
 
 function callback(body) {
 	console.log('Got projects now loop');
 	//var projects = JSON.parse(body);
 	body.forEach(function(project) {
 		let PID = project.id;
-		if (PID != config.harvest.default_project && project.name === 'Services - 2017-12') {
+		if (PID != config.harvest.default_project && project.name === 'Services - 2019-01' && project.is_active) {
 			console.log(`${PID} to be toggled.`);
 			sendRequest('PATCH', {
 				path: `/projects/${PID}/`,
