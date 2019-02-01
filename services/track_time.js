@@ -49,6 +49,7 @@ async function start(args) {
     }
     project_update = _.find(projects, function (project) {
         if (project.is_active && project.client.name.toLowerCase() == time_event.company.toLowerCase() && project.name.indexOf("Services") == 0) {
+            log.info(project.id);
             return project;
         }
     });
@@ -70,6 +71,7 @@ async function start(args) {
     
     if (!project_update || !agent || !task_id) {
         log.info(`${time_event.ticket_id}: missing parameters, bailing out`);
+        log.info(`${time_event.ticket_id}: project:${project_update.name}, agent:${agent.first_name}, task: ${task_id}`);
         await slack({ channel: config.slack.channel }, `FAILED TO LOG TIME FOR:\n${JSON.stringify(time_event)}`);
     } else { 
         log.info(`${time_event.ticket_id}: found project to log against: ${project_update.name}`);
@@ -101,7 +103,7 @@ async function start(args) {
             process.exit(0);
         }).catch(function (err) { 
             log.error(`${time_event.ticket_id}: failed to send time`);
-            log.error(`${time_event.ticket_id}: ${response}`);
+            log.error(`${time_event.ticket_id}: ${err}`);
         })
     }
 }
