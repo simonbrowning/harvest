@@ -44,6 +44,7 @@ function spwanTime(update) {
 			 resolve(stdout);
 		});
 		sub.on('exit', function () {
+			resolve(null);
 			log.info(sub.pid + ' current process finished');
 		});
 	}).catch(function (reason) {
