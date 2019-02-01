@@ -95,10 +95,14 @@ async function start(args) {
             }
         }).then(function (response) {
             process.stdout.write(response.id.toString());
+            log.info(`${time_event.ticket_id}: Harvest Timer id: ${response.id}.`);
             log.info(`${time_event.ticket_id}: finished.`);
             log.close();
             process.exit(0);
-        });
+        }).catch(function (err) { 
+            log.error(`${time_event.ticket_id}: failed to send time`);
+            log.error(`${time_event.ticket_id}: ${response}`);
+        })
     }
 }
 
