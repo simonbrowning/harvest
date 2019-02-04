@@ -71,7 +71,7 @@ async function start(args) {
     
     if (!project_update || !agent || !task_id) {
         log.info(`${time_event.ticket_id}: missing parameters, bailing out`);
-        log.info(`${time_event.ticket_id}: project:${project_update.name}, agent:${agent.first_name}, task: ${task_id}`);
+        log.info(`${time_event.ticket_id}: project:${time_event.company}, agent:${time_event.agent}, task: ${task_id}`);
         await slack({ channel: config.slack.channel }, `FAILED TO LOG TIME FOR:\n${JSON.stringify(time_event)}`);
     } else { 
         log.info(`${time_event.ticket_id}: found project to log against: ${project_update.name}`);
