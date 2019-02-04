@@ -44,7 +44,7 @@ async function start(args) {
     try {
         projects = await getPages('projects');
     } catch (e) {
-        console.error(`${time_event.ticket_id}: failed getting projects`);
+        log.warn(`${time_event.ticket_id}: failed getting projects`);
         process.exit(1);
     }
     project_update = _.find(projects, function (project) {
@@ -58,7 +58,7 @@ async function start(args) {
     try {
         people = await getPages('users');
     } catch (e) {
-        console.warn(`${time_event.ticket_id}: failed get users`);
+        log.warn(`${time_event.ticket_id}: failed get users`);
         
         process.exit(1);
     }
