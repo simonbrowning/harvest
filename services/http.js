@@ -42,10 +42,10 @@ function spwanTime(update) {
 		}, function (error, stdout, stderr) {
 				if(error || stderr) {
 					log.info(sub.pid + " " + stderr);
-					resolve(null);
+					resolve(JSON.stringify(stderr));
 				 }else if (stdout) {
 					log.info(sub.pid + " Harvest ID:" + stdout);
-					resolve(stdout);
+					resolve(JSON.stringify({ id: stdout }));
 				}
 		});
 		sub.on('exit', function () {
@@ -88,7 +88,7 @@ app.post('/api/time_entry', async function (req, res) {
 	log.info(JSON.stringify(time_tracked));
 
 	let response = await spwanTime(time_tracked);
-	return res.send(JSON.stringify({ id: response }));	
+	return res.send(response);	
 })
 
 app.post('/api/client', function(req, res) {

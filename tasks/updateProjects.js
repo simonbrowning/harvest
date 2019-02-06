@@ -10,14 +10,16 @@ function callback(body) {
 	//var projects = JSON.parse(body);
 	body.forEach(function(project) {
 		let PID = project.id;
-		if (project.name === "Services - 2019-02" && project.is_active) {
-			let notes = JSON.parse(project.notes);
-			if (parseInt(notes.client_bucket) == 0) {
-				console.log(project.client.name);
-				sendRequest("PATCH", {
+		if (
+            project.name === "Services" &&
+            !project.is_active &&
+			project.starts_on === "2019-01-01"
+        ) {
+			console.log(project.client.name);
+                sendRequest("PATCH", {
                     path: `/projects/${PID}/`,
                     form: {
-                        is_active: false
+                        is_active: true
                     }
                 })
                     .then(function() {
@@ -26,25 +28,7 @@ function callback(body) {
                     .catch(function(reason) {
                         console.log(`${PID} failed, ${reason}`);
                     });
-			}
-            
-		} else {
-			if (project.name == "Services" && !project.budget_is_monthly) {
-				console.log(project.client.name, project.id);
-				sendRequest("PATCH", {
-						path: `/projects/${PID}/`,
-						form: {
-							name: "Support"
-						}
-					})
-						.then(function() {
-							console.log(`${PID}: ${project.client.name} updated.`);
-						})
-						.catch(function(reason) {
-							console.log(`${PID} failed, ${reason}`);
-						});
-				}
-		}
+        } 
 	});
 }
 // console.log(config.harvest.project_url);
