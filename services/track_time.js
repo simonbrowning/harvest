@@ -105,7 +105,7 @@ async function start(args) {
             log.error(`${time_event.ticket_id}: failed to send time`);
             log.error(`${time_event.ticket_id}: ${err}`);
             await slack({ channel: config.slack.channel }, `FAILED TO LOG TIME FOR:\n${JSON.stringify(time_event)}`);
-            process.stderr.write(JSON.stringify(err));
+            process.stderr.write(JSON.stringify(err.message));
             log.close();
             process.exit(1);
         })

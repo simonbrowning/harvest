@@ -42,7 +42,7 @@ function spwanTime(update) {
 		}, function (error, stdout, stderr) {
 				if(error || stderr) {
 					log.info(sub.pid + " " + stderr);
-					resolve(JSON.stringify(stderr));
+					resolve(JSON.stringify({message: stderr}));
 				 }else if (stdout) {
 					log.info(sub.pid + " Harvest ID:" + stdout);
 					resolve(JSON.stringify({ id: stdout }));
