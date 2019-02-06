@@ -40,7 +40,7 @@ module.exports = function() {
 				return new Promise(async function(resolve, reject) {
 					if (
 						project.is_active &&
-						project.name === config.harvestv2.service_project + moment().format('YYYY-MM')
+						project.name.indexOf("Services") == 0
 					) {
 						log.info(project.client.name, project.name);
 						try {
@@ -57,7 +57,7 @@ module.exports = function() {
 							//check AM is assigned and Project Manager
 							let account_manager;
 
-							if (notes.account_manager === null) {
+							if (notes.account_manager === null || notes.account_manager === null) {
 								log.info(`${project.client.name}: ${project.id} no account manager set`);
 							} else {
 								log.info(`${project.client.name}: ${project.id} find ${notes.account_manager}`);
@@ -78,30 +78,30 @@ module.exports = function() {
 										await setPM(project, account_manager.id);
 									}
 								} else {
-									log.info(
-										`${project.client.name}: ${project.id} lets look in all users for ${
-											notes.account_manager
-										}`
-									);
+									// log.info(
+									// 	`${project.client.name}: ${project.id} lets look in all users for ${
+									// 		notes.account_manager
+									// 	}`
+									// );
 
-									account_manager = findUser(harvest_users, notes.account_manager);
-									log.info(
-										`${project.client.name}: ${project.id} found ${notes.account_manager} - ${
-											account_manager.id
-										} adding`
-									);
+									// account_manager = findUser(harvest_users, notes.account_manager);
+									// log.info(
+									// 	`${project.client.name}: ${project.id} found ${notes.account_manager} - ${
+									// 		account_manager.id
+									// 	} adding`
+									// );
 
-									let added_user = await addUser(project.id, account_manager.id).catch(errorHandle);
-									if (added_user !== null) {
-										log.info(
-											`${project.client.name}: ${project.id} added ${notes.account_manager} now making a PM`
-										);
-										await setPM(project, added_user.id);
+									// let added_user = await addUser(project.id, account_manager.id).catch(errorHandle);
+									// if (added_user !== null) {
+									// 	log.info(
+									// 		`${project.client.name}: ${project.id} added ${notes.account_manager} now making a PM`
+									// 	);
+									// 	await setPM(project, added_user.id);
 
-										log.info(
-											`${project.client.name}: ${project.id} finished adding ${notes.account_manager}`
-										);
-									}
+									// 	log.info(
+									// 		`${project.client.name}: ${project.id} finished adding ${notes.account_manager}`
+									// 	);
+									// }
 								}
 							}
 
