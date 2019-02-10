@@ -77,8 +77,10 @@ async function start(args) {
     if (!project_update || !agent || !task_id) {
         log.info(`${time_event.ticket_id}: missing parameters, bailing out`);
         log.info(`${time_event.ticket_id}: project:${time_event.company}, agent:${time_event.agent}, task: ${task_id}`);
-        process.stderr.write("Failed to log to Harvest");
+        process.stderr.write("Missing Parameters");
         await slack({ channel: config.slack.channel }, `FAILED TO LOG TIME FOR:\n${JSON.stringify(time_event)}`);
+        log.close();
+        process.exit(1);
     } else { 
         log.info(`${time_event.ticket_id}: found project to log against: ${project_update.name}`);
         log.info(`${time_event.ticket_id}: user found, ${agent.first_name}`);
