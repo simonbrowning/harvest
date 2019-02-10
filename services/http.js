@@ -34,12 +34,18 @@ function spwanTime(update) {
 		let args = [`${__dirname}/track_time.js`],
 			sub;
 
+		let timeout = setTimeout(function () {
+			log.info('Response taken too long, timing out.')
+			resolve(JSON.stringify({ message: "Request timed out" }));
+		}, 4500);
+
 		args.push(JSON.stringify(update));
 
 		sub = execFile('node', args, {
 			detached: true,
 			stdio: 'ignore'
 		}, function (error, stdout, stderr) {
+				clearTimeout(timeout);
 				if(error || stderr) {
 					log.info(sub.pid + " " + stderr);
 					resolve(JSON.stringify({message: stderr}));
