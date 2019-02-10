@@ -49,17 +49,22 @@ async function start(args) {
     }
     project_update = _.find(projects, function (project) {
         if (project.is_active && project.client.name.toLowerCase() == time_event.company.toLowerCase() && project.name.indexOf("Services") == 0) {
-            log.info(project.id);
             return project;
         }
     });
 
+    if (!project_update) { 
+        log.warn(`No project found for  ${time_event.company}`);
+        process.stderr.write(`No project found`);
+        log.close();
+        process.exit(1);
+    }
     log.info(`${time_event.ticket_id}: getting users`);
     try {
         people = await getPages('users');
     } catch (e) {
         log.warn(`${time_event.ticket_id}: failed get users`);
-        
+        log.close();
         process.exit(1);
     }
 
@@ -72,6 +77,7 @@ async function start(args) {
     if (!project_update || !agent || !task_id) {
         log.info(`${time_event.ticket_id}: missing parameters, bailing out`);
         log.info(`${time_event.ticket_id}: project:${time_event.company}, agent:${time_event.agent}, task: ${task_id}`);
+        process.stderr.write("Failed to log to Harvest");
         await slack({ channel: config.slack.channel }, `FAILED TO LOG TIME FOR:\n${JSON.stringify(time_event)}`);
     } else { 
         log.info(`${time_event.ticket_id}: found project to log against: ${project_update.name}`);
