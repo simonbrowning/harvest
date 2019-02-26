@@ -27,7 +27,7 @@ module.exports = function(item, options) {
 							resolve();
 						})
 						.catch(function(reason) {
-							log.error(`Failed to get page ${page} of ${item}: ${reason}`);
+							log.warn(`Failed to get page ${page} of ${item}: ${reason}`);
 							resolve();
 						});
 				});
