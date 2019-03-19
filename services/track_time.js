@@ -95,7 +95,7 @@ async function start(args) {
                 task_id: task_id,
                 spent_date: moment().toISOString(),
                 hours: parseFloat(time_event.time_spent),
-                notes: time_event.notes,
+                notes: `#${time_event.ticket_id}: ${time_event.note}`,
                 spent_date: time_event.date,
                 external_reference: {
                     id: time_event.ticket_id,
