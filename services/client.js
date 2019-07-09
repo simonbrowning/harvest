@@ -77,16 +77,11 @@ async function start(args) {
 			client = new_client;
 		}
 	}
-
-	log.info(
-		`${client_object.account}: Finding ${config.harvestv2.service_project + moment().format('YYYY-MM')}`
-	);
+	let project_name =
+		config.harvestv2.service_project + (client_object.client_bucket == 0 ? "" : " - " + moment().format("YYYY-MM"));
+	log.info(`${client_object.account}: Finding ${project_name}`);
 	//Sort out services projects
-	let service_project = findProject(
-		projects,
-		client.id,
-		config.harvestv2.service_project + moment().format('YYYY-MM')
-	);
+	let service_project = findProject(projects, client.id, project_name);
 
 	if (service_project && client_object.status === 'Active') {
 		service_project = service_project;
@@ -172,7 +167,7 @@ async function start(args) {
 
 		cloneProject(services_project, new_project);
 
-		new_project.name = config.harvestv2.service_project + moment().format('YYYY-MM');
+		new_project.name = project_name;
 		new_project.client_id = client.id;
 		new_project.is_active = true;
 		new_project.notes = JSON.stringify({

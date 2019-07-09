@@ -46,7 +46,7 @@ function processProjects(projects) {
 					log.info(`${project.client.name}: ${pid} project to process`);
 					//Set new project name
 					new_project.client_id = project.client.id;
-					new_project.name = config.harvestv2.service_project + moment().format('YYYY-MM');
+					new_project.name = config.harvestv2.service_project +' - '+ moment().format('YYYY-MM');
 					exists = findProject(projects, project.client.id, new_project.name);
 					if (exists) {
 						log.info(`${project.client.name}: ${pid} new project already exists`);
