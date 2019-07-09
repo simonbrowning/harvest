@@ -7,6 +7,33 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "CleanUp Projects",
+            "program": "${workspaceFolder}/tasks/cleanUpProjects.js",
+            "env": {
+                "NODE_ENV": "production"
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Project Report",
+            "program": "${workspaceFolder}/tasks/projectReport.js",
+            "env": {
+                "NODE_ENV": "production"
+            }
+        },
+    {
+        "type": "node",
+        "request": "launch",
+        "name": "Monthly Rollover",
+        "program": "${workspaceFolder}/services/monthly.js",
+        "env": {
+            "NODE_ENV": "production"
+        }
+    },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Cache",
             "program": "${workspaceFolder}/services/cache.js",
             "env": {
