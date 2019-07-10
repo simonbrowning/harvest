@@ -116,9 +116,10 @@ async function start(args) {
                 method: 'DELETE',
                 url: 'http://192.168.0.101:3002/cache'
             }, function () {
-                log.close();
-                process.exit(0);
-            });
+               
+                });
+             log.close();
+             process.exit(0);
         }).catch(async function (err) { 
             let response = JSON.parse(err)
             log.error(`${time_event.ticket_id}: failed to send time`);
