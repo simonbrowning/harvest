@@ -141,6 +141,25 @@ app.post('/api/client', function(req, res) {
 	return res.send(JSON.stringify({result:'ok'}));
 });
 
+app.delete('api/cache', function (req, response) {
+	var options = {
+		"method": "DELETE",
+		"hostname": ["127", "0", "0", "1"],
+		"port": "3002",
+		"path": "cache"
+	};
+	var req = http.request(options, function (res) {
+		var chunks = [];
+
+		res.on("data", function (chunk) {
+			chunks.push(chunk);
+		});
+		res.on("end", function () {
+			response.send(chuncks);
+		})
+	});
+});
+
 app.listen(3000, function(err) {
 	if (err) throw err;
 	log.info(`Express server listening on 3000`);
