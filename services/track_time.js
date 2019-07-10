@@ -8,7 +8,9 @@ const _ = require("underscore"),
     getPages = require('../actions/getPages'),
     findUser = require('../utils/findUser.js'),
     slack = require('../actions/slack.js'),
-    log = require('../actions/logging.js');
+    log = require('../actions/logging.js'),
+    request = require('request');
+
 
 moment.locale('en-gb');
 const tasks = {
@@ -110,15 +112,26 @@ async function start(args) {
             process.stdout.write(response.id.toString());
             log.info(`${time_event.ticket_id}: Harvest Timer id: ${response.id}.`);
             log.info(`${time_event.ticket_id}: finished.`);
-            log.close();
-            process.exit(0);
+            request({
+                method: 'DELETE',
+                url: 'http://192.168.0.101:3002/cache'
+            }, function () {
+                log.close();
+                process.exit(0);
+            });
         }).catch(async function (err) { 
             let response = JSON.parse(err)
             log.error(`${time_event.ticket_id}: failed to send time`);
             log.error(`${time_event.ticket_id}: ${response.message}`);
             process.stderr.write(response.message);
             await slack({ channel: config.slack.channel }, `FAILED TO LOG TIME FOR:\n${JSON.stringify(time_event)}`);
-            
+            request({
+                method: 'DELETE',
+                url: 'http://192.168.0.101:3002/cache'
+            }, function () {
+                log.close();
+                process.exit(0);
+            });
             log.close();
             process.exit(1);
         })
