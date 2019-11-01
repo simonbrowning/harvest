@@ -3,6 +3,7 @@ const sendRequest = require('../actions/sendRequest.js'),
 
 module.exports = function(data) {
 	return new Promise(function(resolve, reject) {
+		log.info(JSON.stringify(data));
 		log.info(
 			`${data.client_name}: ${data.old_project
 				.id} getting old users`
