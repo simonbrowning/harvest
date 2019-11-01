@@ -29,7 +29,7 @@ module.exports = function proccessTasks(data) {
 					});
 			}).catch(function(reason) {
 				log.error(
-					`${data.new_project.client.name} failed to add task: ${reason}`
+					`${data.client_name} failed to add task: ${reason}`
 				);
 			});
 		});

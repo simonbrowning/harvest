@@ -8,7 +8,7 @@ module.exports = function(data) {
 			pid = data.old_project.id;
 		if (config.harvest.default_project !== pid) {
 			log.info(
-				`${data.new_project.client.name}: ${data.old_project
+				`${data.client_name}: ${data.old_project
 					.id} deactivating project`
 			);
 			try {
@@ -20,12 +20,12 @@ module.exports = function(data) {
 				});
 
 				log.info(
-					`${data.new_project.client.name}: ${data.old_project
+					`${data.client_name}: ${data.old_project
 						.id} project ${!toggle.is_active ? 'deactivated' : 'still active'}`
 				);
 			} catch (e) {
 				reject(
-					`${data.new_project.client.name}: ${data.old_project
+					`${data.client_name}: ${data.old_project
 						.id} failed to deactivate: ${e}`
 				);
 			}

@@ -61,7 +61,7 @@ module.exports = function processUsers(data) {
 					});
 			}).catch(function(reason) {
 				log.error(
-					`${data.new_project.client.name} failed add ${user_assignment.user
+					`${data.client_name} failed add ${user_assignment.user
 						.name}`
 				);
 			});
