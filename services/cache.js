@@ -58,7 +58,7 @@ app.post('/cache', function (req, res) {
             return res.send(JSON.stringify({ 'message': err }));
         }
         log.info(`Cache set: ${success}`)
-        return res.send(JSON.stringify({ 'message': success ? "Cahce Set": "Cache Not Set" }));
+        return res.send(JSON.stringify({ 'message': success ? "Cache Set": "Cache Not Set" }));
     })
 });
 
