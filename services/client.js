@@ -161,7 +161,7 @@ async function start(args) {
 
 		services_project = findProject(
 			projects,
-			findClient('[TEMPLATES]', clients).id,
+			5776988,
 			config.harvest.service_project
 		);
 		log.info(`Services template project ${services_project}`);
