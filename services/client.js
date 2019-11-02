@@ -162,9 +162,9 @@ async function start(args) {
 		services_project = findProject(
 			projects,
 			5776988,
-			config.harvest.service_project
+			config.harvestv2.service_project
 		);
-		log.info(`Services template project ${services_project}`);
+		log.info(`Services template project ${JSON.stringify(services_project)}`);
 		cloneProject(services_project, new_project);
 
 		new_project.name = project_name;
