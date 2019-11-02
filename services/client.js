@@ -164,7 +164,7 @@ async function start(args) {
 			findClient('[TEMPLATES]', clients).id,
 			config.harvest.service_project
 		);
-
+		log.info(`Services template project ${services_project}`);
 		cloneProject(services_project, new_project);
 
 		new_project.name = project_name;
