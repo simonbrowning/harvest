@@ -341,43 +341,72 @@ async function start(args) {
 			// //Deployment Manager
 			log.info(`${client_object.account}: ${data.new_pid} setting DM`);
 			let dm = {};
-			if (client_object.account_manager !== client_object.deployment_manager && client_object.territory) {
-				try {
-					dm.users = findUser(users, client_object.deployment_manager, [
-						client_object.territory,
-						'Project Management'
-					]);
-					await dm.users.forEach(async function(user) {
-						try {
-							log.info(
-								`${client_object.account}: ${data.new_pid} found ${user.first_name} ${user.last_name}`
-							);
-							let uid = await addUser(data.new_pid, user.id).catch(errorHandle);
-							log.info(
-								`${client_object.account}: ${data.new_pid} setting as PM ${user.first_name} ${user.last_name}`
-							);
-							await setPM(data.new_project, uid.id).catch(errorHandle);
-							log.info(
-								`${client_object.account}: ${data.new_pid} slacking DM: ${user.first_name} ${user.last_name}`
-							);
-							await slack({
-								channel: '@' + user.email.toLowerCase().match(/^(.+)\@/)[1],
-								client: client_object.account,
-								project: client_object.deployment_project,
-								pid: data.new_pid,
-								role: 'Deployment Manager'
-							}).catch(errorHandle);
-						} catch (e) {
-							log.error(`failed to add DM: ${user.first_name} ${user.last_name} - ${e}`);
-						}
-					});
-				} catch (e) {
-					log.error(
-						`${client_object.account}: ${data.new_pid} Can't find ${
-							client_object.deployment_manager
-						}, are they a valid user?`
-					);
+			if (client_object.deployment_manager) {
+				if(client_object.territory){
+					try {
+						dm.users = findUser(users, client_object.deployment_manager,[client_object.territory,"Project Management"]);
+						log.info(client_object.deployment_manager);
+						log.info(dm.users);
+						await dm.users.forEach(async function(user) {
+							try {
+								log.info(
+									`${client_object.account}: ${data.new_pid} found ${user.first_name} ${user.last_name}`
+								);
+								let uid = await addUser(data.new_pid, user.id).catch(errorHandle);
+								log.info(
+									`${client_object.account}: ${data.new_pid} setting as PM ${user.first_name} ${user.last_name}`
+								);
+								await setPM(data.new_project, uid.id).catch(errorHandle);
+								log.info(
+									`${client_object.account}: ${data.new_pid} slacking DM: ${user.first_name} ${user.last_name}`
+								);
+								await slack({
+									channel: '@' + user.email.toLowerCase().match(/^(.+)\@/)[1],
+									client: client_object.account,
+									project: client_object.deployment_project,
+									pid: data.new_pid,
+									role: 'Deployment Manager'
+								}).catch(errorHandle);
+							} catch (e) {
+								log.error(`failed to add DM: ${user.first_name} ${user.last_name} - ${e}`);
+							}
+						});
+					} catch (e) {
+						log.error(e);
+						log.error(
+							`${client_object.account}: ${data.new_pid} Can't find ${
+								client_object.deployment_manager
+							}, are they a valid user?`
+						);
+					}
+				}else{
+					try {
+						log.info(client_object.deployment_manager);
+						log.info(`No territory provided adding only assigned DM`);
+						let user = findUser(users, client_object.deployment_manager);
+						log.info(
+							`${client_object.account}: ${data.new_pid} found ${user.first_name} ${user.last_name}`
+						);
+						let uid = await addUser(data.new_pid, user.id).catch(errorHandle);
+						log.info(
+							`${client_object.account}: ${data.new_pid} setting as PM ${user.first_name} ${user.last_name}`
+						);
+						await setPM(data.new_project, uid.id).catch(errorHandle);
+						log.info(
+							`${client_object.account}: ${data.new_pid} slacking DM: ${user.first_name} ${user.last_name}`
+						);
+						await slack({
+							channel: '@' + user.email.toLowerCase().match(/^(.+)\@/)[1],
+							client: client_object.account,
+							project: client_object.deployment_project,
+							pid: data.new_pid,
+							role: 'Deployment Manager'
+						}).catch(errorHandle);
+					} catch (e) {
+						log.error(`failed to add DM: ${user.first_name} ${user.last_name} - ${e}`);
+					}
 				}
+				
 			}
 
 			//Deployment Enigneer
@@ -395,13 +424,13 @@ async function start(args) {
 						`${client_object.account}: ${data.new_pid} slacking DE: ${client_object.deployment_engineer}`
 					);
 
-					await slack({
-						channel: '@' + client_object.deployment_engineer.replace(' ', '.').toLowerCase(),
-						client: client_object.account,
-						project: client_object.deployment_project,
-						pid: data.new_pid,
-						role: 'Deployment Engineer'
-					}).catch(errorHandle);
+					// await slack({
+					// 	channel: '@' + client_object.deployment_engineer.replace(' ', '.').toLowerCase(),
+					// 	client: client_object.account,
+					// 	project: client_object.deployment_project,
+					// 	pid: data.new_pid,
+					// 	role: 'Deployment Engineer'
+					// }).catch(errorHandle);
 				} catch (e) {
 					log.error(
 						`${client_object.account}: ${data.new_pid} Can't find ${
