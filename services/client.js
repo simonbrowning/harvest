@@ -345,8 +345,6 @@ async function start(args) {
 				if(client_object.territory){
 					try {
 						dm.users = findUser(users, client_object.deployment_manager,[client_object.territory,"Project Management"]);
-						log.info(client_object.deployment_manager);
-						log.info(dm.users);
 						await dm.users.forEach(async function(user) {
 							try {
 								log.info(
@@ -381,7 +379,6 @@ async function start(args) {
 					}
 				}else{
 					try {
-						log.info(client_object.deployment_manager);
 						log.info(`No territory provided adding only assigned DM`);
 						let user = findUser(users, client_object.deployment_manager);
 						log.info(
@@ -424,13 +421,13 @@ async function start(args) {
 						`${client_object.account}: ${data.new_pid} slacking DE: ${client_object.deployment_engineer}`
 					);
 
-					// await slack({
-					// 	channel: '@' + client_object.deployment_engineer.replace(' ', '.').toLowerCase(),
-					// 	client: client_object.account,
-					// 	project: client_object.deployment_project,
-					// 	pid: data.new_pid,
-					// 	role: 'Deployment Engineer'
-					// }).catch(errorHandle);
+					await slack({
+						channel: '@' + client_object.deployment_engineer.replace(' ', '.').toLowerCase(),
+						client: client_object.account,
+						project: client_object.deployment_project,
+						pid: data.new_pid,
+						role: 'Deployment Engineer'
+					}).catch(errorHandle);
 				} catch (e) {
 					log.error(
 						`${client_object.account}: ${data.new_pid} Can't find ${
