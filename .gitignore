@@ -4,3 +4,4 @@
 /config/prod.js
 .DS_Store
 /logs
+/accounts.txt
