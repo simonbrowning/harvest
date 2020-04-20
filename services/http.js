@@ -14,6 +14,21 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+function spwanUser(update) {
+	let args = [`${__dirname}/addUser.js`],
+		sub;
+
+	args.push(JSON.stringify(update));
+
+	sub = execFile('node', args, {
+		detached: true,
+		stdio: 'ignore'
+	});
+	sub.on('exit', function() {
+		log.info(sub.pid + ' current process finished');
+	});
+}
+
 function spwanClient(update) {
 	let args = [`${__dirname}/client.js`],
 		sub;
@@ -86,6 +101,19 @@ function waitForPrevious(update) {
 app.get('/api/status', function(req, res) {
 	log.info(`status api called`);
 	res.send('Not dead yet.');
+});
+
+app.post('/api/user',function(req,res){
+	log.info(`user api called`);
+	log.info(JSON.stringify(req.body));
+	let update = {};
+	update.user = req.body.user;
+ 	update.project = req.body.project;
+
+
+ 	spwanUser(update);
+ 	res.type('json');
+ 	res.send(JSON.stringify({result:'ok'}));
 });
 
 app.post('/api/time_entry', async function (req, res) { 
