@@ -67,7 +67,7 @@ async function start(args) {
 		log.info(`${client_object.account}: create client`);
 		let new_client = await sendRequest('POST', {
 			path: '/clients',
-			form: { name: client_object.account }
+			form: { name: client_object.account,address: client_object.sf_id }
 		}).catch(errorHandle);
 
 		if (!new_client) {
