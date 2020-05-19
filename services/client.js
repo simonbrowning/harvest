@@ -287,7 +287,7 @@ async function start(args) {
 						let iq_tasks = findTasks(tasks, 'iQ');
 						let es_tasks = findTasks(tasks, 'ES');
 						filteredTasks = iq_tasks.concat(es_tasks);
-					}else if(client_object.type === 'DataAccess'){
+					}else if(/DataAccess|AudienceStore|EventStore|EventDB|AudienceDB/i.test(client_object.type)){
 						log.info(`${client_object.account}: ${data.new_pid} DA deployment`);
 						filteredTasks = findTasks(tasks, 'DA');
 					}
