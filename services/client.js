@@ -279,7 +279,7 @@ async function start(args) {
 					} else if (client_object.type === 'Cloud Delivery' || client_object.type === 'EventStream') {
 						log.info(`${client_object.account}: ${data.new_pid} ES deployment`);
 						filteredTasks = findTasks(tasks, 'ES');
-					} else if (client_object.type === 'Web') {
+					} else if (client_object.type === 'Tealium iQ') {
 						log.info(`${client_object.account}: ${data.new_pid} iQ deployment`);
 						filteredTasks = findTasks(tasks, 'iQ');
 					} else if (/android|ios|mobile web|blackberry|windows/i.test(client_object.type)) {
