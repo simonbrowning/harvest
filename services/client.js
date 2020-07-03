@@ -257,6 +257,7 @@ async function start(args) {
 					estimate_by: 'project',
 					billable: true,
 					bill_by: 'People',
+					code: client_object.opp_number,
 					notify_when_over_budget: true
 				}
 			}).catch(errorHandle);
