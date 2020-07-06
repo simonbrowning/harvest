@@ -1,12 +1,7 @@
 process.env.log = 'cache';
 
-let last_request = {},
-    previous_process;
-
 const express = require('express'),
     _ = require('underscore'),
-    { execFile } = require('child_process'),
-    log = require('../actions/logging.js'),
     bodyParser = require("body-parser"),
     NodeCache = require("node-cache");
 const myCache = new NodeCache({ stdTTL: 72000 });
@@ -31,7 +26,7 @@ app.get("/cache/stats", function(req, res) {
 
 app.get('/cache', function (req, res) {
     let key = decodeURI(req.query.key);
-    log.info(`New request for ${key}`);
+    console.log(`New request for ${key}`);
     res.type("json");
 
     if (!key) {
@@ -40,10 +35,10 @@ app.get('/cache', function (req, res) {
 
     myCache.get(key, function (err, value) { 
         if (err) {
-            log.info(`Error ${err}`);
+            console.log(`Error ${err}`);
             return res.send(JSON.stringify({ 'message': err }));  
         }
-        log.info(`${value ?  'SENDING CACHE' : 'NO CACHED VALUE'}`);
+        console.log(`${value ?  'SENDING CACHE' : 'NO CACHED VALUE'}`);
         return res.send(value? JSON.stringify(value) : null);
     });
 })
@@ -52,17 +47,17 @@ app.post('/cache', function (req, res) {
     let new_entry = req.body;
     res.type("json");
     let data = JSON.parse(new_entry.value);
-    log.info(`Set entry ${new_entry.name}`);
+    console.log(`Set entry ${new_entry.name}`);
     myCache.set(new_entry.name, data, function (err,success) { 
         if (err) { 
             return res.send(JSON.stringify({ 'message': err }));
         }
-        log.info(`Cache set: ${success}`)
+        console.log(`Cache set: ${success}`)
         return res.send(JSON.stringify({ 'message': success ? "Cache Set": "Cache Not Set" }));
     })
 });
 
 app.listen(3002, function (err) {
     if (err) throw err;
-    log.info(`Express server listening on 3000`);
+    console.log(`Express server listening on 3002`);
 });
