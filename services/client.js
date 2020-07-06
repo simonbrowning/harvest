@@ -44,7 +44,7 @@ async function start(args) {
 	const users = await getPages('users').catch(errorHandle);
 
 	let am = {};
-	if (client_object.account_manager === client_object.deployment_manager || !client_object.account_manager) {
+	if (client_object.account_manager === client_object.project_manager || !client_object.account_manager) {
 		am.user = null;
 	} else {
 		log.info(`${client_object.account}: finding Account Manager`);
@@ -342,10 +342,10 @@ async function start(args) {
 			// //Deployment Manager
 			log.info(`${client_object.account}: ${data.new_pid} setting PM`);
 			let dm = {};
-			if (client_object.deployment_manager) {
+			if (client_object.project_manager) {
 				if(client_object.territory){
 					try {
-						dm.users = findUser(users, client_object.deployment_manager,[client_object.territory,"Project Management"]);
+						dm.users = findUser(users, client_object.project_manager,[client_object.territory,"Project Management"]);
 						await dm.users.forEach(async function(user) {
 							try {
 								log.info(
@@ -357,7 +357,7 @@ async function start(args) {
 								);
 								await setPM(data.new_project, uid.id).catch(errorHandle);
 								log.info(
-									`${client_object.account}: ${data.new_pid} slacking DM: ${user.first_name} ${user.last_name}`
+									`${client_object.account}: ${data.new_pid} slacking PM: ${user.first_name} ${user.last_name}`
 								);
 								await slack({
 									channel: '@' + user.email.toLowerCase().match(/^(.+)\@/)[1],
@@ -374,14 +374,14 @@ async function start(args) {
 						log.error(e);
 						log.error(
 							`${client_object.account}: ${data.new_pid} Can't find ${
-								client_object.deployment_manager
+								client_object.project_manager
 							}, are they a valid user?`
 						);
 					}
 				}else{
 					try {
-						log.info(`No territory provided adding only assigned DM`);
-						let user = findUser(users, client_object.deployment_manager);
+						log.info(`No territory provided adding only assigned PM`);
+						let user = findUser(users, client_object.project_manager);
 						log.info(
 							`${client_object.account}: ${data.new_pid} found ${user.first_name} ${user.last_name}`
 						);
@@ -398,10 +398,10 @@ async function start(args) {
 							client: client_object.account,
 							project: client_object.deployment_project,
 							pid: data.new_pid,
-							role: 'Deployment Manager'
+							role: 'Project Manager'
 						}).catch(errorHandle);
 					} catch (e) {
-						log.error(`failed to add DM: ${user.first_name} ${user.last_name} - ${e}`);
+						log.error(`failed to add PM: ${user.first_name} ${user.last_name} - ${e}`);
 					}
 				}
 				
