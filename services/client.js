@@ -391,7 +391,7 @@ async function start(args) {
 						);
 						await setPM(data.new_project, uid.id).catch(errorHandle);
 						log.info(
-							`${client_object.account}: ${data.new_pid} slacking DM: ${user.first_name} ${user.last_name}`
+							`${client_object.account}: ${data.new_pid} slacking PM: ${user.first_name} ${user.last_name}`
 						);
 						await slack({
 							channel: '@' + user.email.toLowerCase().match(/^(.+)\@/)[1],
@@ -411,7 +411,7 @@ async function start(args) {
 			if (client_object.deployment_engineer == 'Partner/Agency') {
 				log.info(`${client_object.account}: ${data.new_pid} Partner/Agency set, ingoring`);
 			} else {
-				log.info(`${client_object.account}: ${data.new_pid} setting DE`);
+				log.info(`${client_object.account}: ${data.new_pid} setting IE`);
 				let de = {};
 				try {
 					de.user = findUser(users, client_object.deployment_engineer);
@@ -419,7 +419,7 @@ async function start(args) {
 					de.uid = await addUser(data.new_pid, de.user.id).catch(errorHandle);
 
 					log.info(
-						`${client_object.account}: ${data.new_pid} slacking DE: ${client_object.deployment_engineer}`
+						`${client_object.account}: ${data.new_pid} slacking IE: ${client_object.deployment_engineer}`
 					);
 
 					await slack({
@@ -427,7 +427,7 @@ async function start(args) {
 						client: client_object.account,
 						project: client_object.deployment_project,
 						pid: data.new_pid,
-						role: 'Deployment Engineer'
+						role: 'Implementation Engineer'
 					}).catch(errorHandle);
 				} catch (e) {
 					log.error(
