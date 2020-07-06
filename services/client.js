@@ -340,7 +340,7 @@ async function start(args) {
 			}
 
 			// //Deployment Manager
-			log.info(`${client_object.account}: ${data.new_pid} setting DM`);
+			log.info(`${client_object.account}: ${data.new_pid} setting PM`);
 			let dm = {};
 			if (client_object.deployment_manager) {
 				if(client_object.territory){
@@ -364,7 +364,7 @@ async function start(args) {
 									client: client_object.account,
 									project: client_object.deployment_project,
 									pid: data.new_pid,
-									role: 'Deployment Manager'
+									role: 'Project Manager'
 								}).catch(errorHandle);
 							} catch (e) {
 								log.error(`failed to add DM: ${user.first_name} ${user.last_name} - ${e}`);
