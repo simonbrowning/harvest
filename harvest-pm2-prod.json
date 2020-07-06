@@ -17,6 +17,11 @@
 			"name": "github",
 			"script": "./services/github.js",
 			"watch": true
+		},
+		{
+			"name": "cache",
+			"script": "./services/cache.js",
+			"watch": true
 		}
 	]
 }

@@ -7,10 +7,7 @@ let http = execFile('node', [`${__dirname}/services/http.js`], {
 	detached: true,
 	stdio: 'ignore'
 });
-let cache = execFile("node", [`${__dirname}/services/cache.js`], {
-    detached: true,
-    stdio: "ignore"
-});
+
 const monthlyRolloverJob = new CronJob(
 	'00 00 01 01 */1 *',
 	function() {
