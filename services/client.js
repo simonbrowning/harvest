@@ -153,9 +153,10 @@ async function start(args) {
 		log.info(`${client_object.account}: No longer active closing `);
 		await toggle({ new_project: service_project, old_project: service_project });
 	} else {
-		log.info(`${client_object.account}: no services project found`);
+		try{
+			log.info(`${client_object.account}: no services project found`);
 
-		log.info(`${client_object.account}: create service project`);
+		log.info(`${client_object.account}: create services project`);
 		let new_project = {},
 			services_project;
 
@@ -230,6 +231,10 @@ async function start(args) {
 		request.delete('http://127.0.0.1:3002/cache', function () {
 			log.info('New Services project created clearing cache');
 		});
+		}catch(e){
+			log.error(e);
+		}
+		
 	}
 
 	//run through deployment project
