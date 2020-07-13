@@ -348,7 +348,7 @@ async function start(args) {
 			log.info(`${client_object.account}: ${data.new_pid} setting PM`);
 			let dm = {};
 			if (client_object.project_manager) {
-				if(client_object.territory){
+				if(client_object.territory && client_object.territory == "EMEA"){
 					try {
 						dm.users = findUser(users, client_object.project_manager,[client_object.territory,"Project Management"]);
 						await dm.users.forEach(async function(user) {
@@ -356,11 +356,8 @@ async function start(args) {
 								log.info(
 									`${client_object.account}: ${data.new_pid} found ${user.first_name} ${user.last_name}`
 								);
-								let uid = await addUser(data.new_pid, user.id).catch(errorHandle);
-								log.info(
-									`${client_object.account}: ${data.new_pid} setting as PM ${user.first_name} ${user.last_name}`
-								);
-								await setPM(data.new_project, uid.id).catch(errorHandle);
+								let uid = await addUser(data.new_pid, user.id, true).catch(errorHandle);
+								
 								log.info(
 									`${client_object.account}: ${data.new_pid} slacking PM: ${user.first_name} ${user.last_name}`
 								);
