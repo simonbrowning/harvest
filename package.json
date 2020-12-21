@@ -30,6 +30,6 @@
 		"xml-js": "^1.6.2"
 	},
 	"devDependencies": {
-		"node-notifier": "^5.1.2"
+		"node-notifier": "^8.0.1"
 	}
 }
